@@ -96,7 +96,7 @@ new Chart(document.getElementById('psnrChart'), {
                 ...commonOptions.scales.y,
                 title: {
                     display: true,
-                    text: 'PSNR Value (dB)'
+                    text: 'PSNR Value'
                 }
             }
         }
