@@ -1,39 +1,144 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<style>
-  .cifar-image {
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-}
-.cifar-image.highlighted {
-    border-color: #ff0000;
-    transform: scale(1.1);
-    z-index: 1;
-}
-.point-highlighted {
-  r: 8;
-  stroke-width: 3;
-}
-</style>
-<div style="width: 800px; margin: 20px auto;">
-  <canvas id="mseChart"></canvas>
-  <canvas id="psnrChart"></canvas>
-  <canvas id="ssimChart"></canvas>
+<div class="flex flex-row min-h-screen justify-center items-center">
+    <div class="card w-96 bg-base-100 shadow-xl">
+        <!-- Tabs using DaisyUI's role tabs -->
+        <div role="tablist" class="tabs tabs-boxed bg-base-200 m-2">
+            <a role="tab" class="tab tab-active" id="individual_tab">Individual</a>
+            <a role="tab" class="tab" id="multiple_tab">Multiple</a>
+        </div>
 
-  <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 20px;">
-    {% for image in images %}
-    <div>
-        <img src="data:image/png;base64,{{ image }}" 
-             alt="CIFAR100 Image" 
-             class="cifar-image"
-             data-index="{{ loop.index0 }}"
-             style="width: 100%; height: auto;">
+        <div class="tab-panels p-4">
+            <!-- Individual Analysis Form -->
+            <div id="individual_content" class="space-y-4">
+                <h2 class="card-title justify-center">Individual CIFAR Analysis</h2>
+                <form class="space-y-4" action="{{ url_for('handle_data_single') }}", method="POST">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">CIFAR Index</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            min="1" 
+                            max="60000" 
+                            placeholder="Enter index (1-60000)" 
+                            class="input input-bordered" 
+                            required 
+                            name="cifar_index"
+                        />
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Activation Function</span>
+                        </label>
+                        <select class="select select-bordered w-full" name="activation_function" required>
+                            <option disabled selected>Select activation function</option>
+                            <option value="relu">ReLU</option>
+                            <option value="sigmoid">Sigmoid</option>
+                            <option value="tanh">Tanh</option>
+                            <option value="leaky_relu">Leaky ReLU</option>
+                            <option value="elu">ELU</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-full">Analyze</button>
+                </form>
+            </div>
+
+            <!-- Multiple Analysis Form -->
+            <div id="multiple_content" class="space-y-4 hidden">
+                <h2 class="card-title justify-center">Multiple CIFAR Analysis</h2>
+                <form class="space-y-4" action="{{ url_for('handle_data_multiple') }}", method="POST">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Beginning Index</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            min="1" 
+                            max="60000" 
+                            placeholder="Enter starting index (1-60000)" 
+                            class="input input-bordered" 
+                            id="beginning_index"
+                            required
+                            name="start_cifar_index"
+                        />
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Ending Index</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            min="1" 
+                            max="60000" 
+                            placeholder="Enter ending index (1-60000)" 
+                            class="input input-bordered" 
+                            id="ending_index"
+                            required 
+                            name="end_cifar_index"
+                        />
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Activation Function</span>
+                        </label>
+                        <select class="select select-bordered w-full" name="activation_function" required>
+                            <option disabled selected>Select activation function</option>
+                            <option value="relu">ReLU</option>
+                            <option value="sigmoid">Sigmoid</option>
+                            <option value="tanh">Tanh</option>
+                            <option value="leaky_relu">Leaky ReLU</option>
+                            <option value="elu">ELU</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-full">Analyze Range</button>
+                </form>
+            </div>
+        </div>
     </div>
-    {% endfor %}
-  </div>
 </div>
-<script src="{{ url_for('static', filename='js/charts.js')}}"></script>
-<script src="{{ url_for('static', filename='js/hightlight.js')}}"></script>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const individualTab = document.getElementById('individual_tab');
+    const multipleTab = document.getElementById('multiple_tab');
+    const individualContent = document.getElementById('individual_content');
+    const multipleContent = document.getElementById('multiple_content');
+
+    // Tab switching logic
+    individualTab.addEventListener('click', function() {
+        individualTab.classList.add('tab-active');
+        multipleTab.classList.remove('tab-active');
+        individualContent.classList.remove('hidden');
+        multipleContent.classList.add('hidden');
+    });
+
+    multipleTab.addEventListener('click', function() {
+        multipleTab.classList.add('tab-active');
+        individualTab.classList.remove('tab-active');
+        multipleContent.classList.remove('hidden');
+        individualContent.classList.add('hidden');
+    });
+
+    // Validation for multiple analysis form
+    const beginningIndex = document.getElementById('beginning_index');
+    const endingIndex = document.getElementById('ending_index');
+
+    function validateIndices() {
+        if (beginningIndex.value && endingIndex.value) {
+            const start = parseInt(beginningIndex.value);
+            const end = parseInt(endingIndex.value);
+            
+            if (end <= start) {
+                endingIndex.setCustomValidity('Ending index must be greater than beginning index');
+            } else {
+                endingIndex.setCustomValidity('');
+            }
+        }
+    }
+
+    beginningIndex.addEventListener('input', validateIndices);
+    endingIndex.addEventListener('input', validateIndices);
+});
+</script>
 {% endblock %}
