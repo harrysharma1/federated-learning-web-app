@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-screen">
+    <div class="w-96 p-6 bg-base-100 shadow-xl rounded-lg">
+        <h2 class="text-xl font-bold mb-4">Processing Images...</h2>
+        
+        <div class="mb-4">
+            <div class="flex justify-between mb-1">
+                <span class="text-sm font-medium">Progress</span>
+                <span class="text-sm font-medium" id="progress-text">0%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="bg-blue-600 h-2.5 rounded-full" id="progress-bar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div id="current-image" class="mb-4 flex justify-center"></div>
+        <div id="metrics" class="text-sm space-y-1"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const socket = io();
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const currentImage = document.getElementById('current-image');
+        const metrics = document.getElementById('metrics');
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            socket.emit('start_processing', {
+                start_index: {{ start_cifar_index }},
+                end_index: {{ end_cifar_index }},
+                activation_function: '{{ activation_function }}'
+            });
+        });
+
+        socket.on('progress', function(data) {
+            console.log('Progress update:', data.progress);
+            progressBar.style.width = data.progress + '%';
+            progressText.textContent = Math.round(data.progress) + '%';
+            
+            if (data.current_result) {
+                currentImage.innerHTML = `
+                    <img src="data:image/png;base64,${data.current_result.image}" 
+                         class="w-32 h-32 object-contain"/>
+                `;
+
+                metrics.innerHTML = `
+                    <div>MSE: ${data.current_result.mse.toFixed(2)}</div>
+                    <div>PSNR: ${data.current_result.psnr.toFixed(2)}</div>
+                    <div>SSIM: ${data.current_result.ssim.toFixed(2)}</div>
+                `;
+            }
+        });
+        socket.on('complete', function(data) {
+            if (data.results) {
+                try {
+                    // Convert results to URL-safe string
+                    const resultsStr = encodeURIComponent(JSON.stringify(data.results));
+                    console.log('Processing complete, redirecting with results...');
+                    // Redirect to chart with results as query parameter
+                    window.location.href = `{{ url_for('chart') }}?results=${resultsStr}`;
+                } catch (error) {
+                    console.error('Error processing results:', error);
+                    alert('Error processing results: ' + error.message);
+                }
+            } else {
+                console.error('No results received');
+                alert('No results received from server');
+            }
+        });
+
+        socket.on('error', function(error) {
+            console.error('Error:', error);
+            alert('An error occurred: ' + error);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+    });
+</script>
+{% endblock %}
