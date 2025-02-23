@@ -157,6 +157,25 @@ def process_single_image(idx, activation_function):
         'image': helper.encode_image(reconstructed_data)
     }
 
+    
+class LocalSession():
+    def __init__(self):
+        self.results=[]
+    
+    def add(self, item):
+        self.results.append(item)
+
+    def get_results(self):
+        return self.results
+    
+    def remove(self, item):
+        self.results.remove(item)
+        
+    def clear(self):
+        self.results = []
+
+local_session = LocalSession()
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -243,12 +262,13 @@ def handle_process(data):
         end_cifar_index = data['end_index']
         activation_function = data['activation_function']
         total = end_cifar_index - start_cifar_index + 1
-        
+        local_session.clear()
         results = []
         for i, cifar_id in enumerate(range(start_cifar_index, end_cifar_index + 1)):
             result = process_single_image(cifar_id, activation_function)
             results.append({'cifar_id': cifar_id, **result})
-            
+            result_with_id = {'cifar_id': cifar_id, **result}
+            local_session.add(result_with_id)
             progress = ((i + 1)/total) * 100
             emit('progress', {
                 'progress': progress,
@@ -281,11 +301,9 @@ def convert_image(data):
 def chart():
     helper = Helper()
     try:
-        results_json = request.args.get('results')
-        if not results_json:
+        results = local_session.get_results()
+        if not results:
             return redirect(url_for('index'))
-            
-        results = json.loads(results_json)
         
         # Add original images
         for result in results:
@@ -296,7 +314,7 @@ def chart():
         return render_template('chart_multiple.html', results=results)
     except Exception as e:
         print(f"Chart error: {e}")
-        return redirect(url_for('index'))
+        return redirect(url_for('index'))    
 
 # Multiple Random
 

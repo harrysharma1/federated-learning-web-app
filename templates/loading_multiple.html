@@ -77,7 +77,7 @@
                 try {
                     const resultsStr = encodeURIComponent(JSON.stringify(data.results));
                     console.log('Processing complete, redirecting with results...');
-                    window.location.href = `{{ url_for('chart') }}?results=${resultsStr}`;
+                    window.location.href = `{{ url_for('chart') }}`;
                 } catch (error) {
                     console.error('Error processing results:', error);
                     alert('Error processing results: ' + error.message);
