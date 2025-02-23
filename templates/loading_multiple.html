@@ -43,10 +43,10 @@
             progressText.textContent = Math.round(data.progress) + '%';
             
             if (data.current_result) {
-                currentImage.innerHTML = `
-                    <img src="data:image/png;base64,${data.current_result.image}" 
-                         class="w-32 h-32 object-contain"/>
-                `;
+                
+                socket.emit('convert_image', { 
+                    image: data.current_result.image 
+                });
 
                 metrics.innerHTML = `
                     <div>MSE: ${data.current_result.mse.toFixed(2)}</div>
@@ -55,6 +55,14 @@
                 `;
             }
         });
+
+        socket.on('image_converted', function(data) {
+            currentImage.innerHTML = `
+                <img src="data:image/png;base64,${data.image}" 
+                     class="w-32 h-32 object-contain"/>
+            `;
+        });
+
         socket.on('complete', function(data) {
             if (data.results) {
                 try {

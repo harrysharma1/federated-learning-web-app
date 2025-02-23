@@ -19,9 +19,9 @@
                         </label>
                         <input 
                             type="number" 
-                            min="1" 
-                            max="60000" 
-                            placeholder="Enter index (1-60000)" 
+                            min="0" 
+                            max="49999" 
+                            placeholder="Enter index (0-49999)" 
                             class="input input-bordered" 
                             required 
                             name="cifar_index"
@@ -52,9 +52,9 @@
                         </label>
                         <input 
                             type="number" 
-                            min="1" 
-                            max="60000" 
-                            placeholder="Enter starting index (1-60000)" 
+                            min="0" 
+                            max="49999" 
+                            placeholder="Enter starting index (0-49999)" 
                             class="input input-bordered" 
                             id="beginning_index"
                             required
@@ -62,20 +62,26 @@
                         />
                     </div>
                     <div class="form-control">
-                        <label class="label">
-                            <span class="label-text">Ending Index</span>
-                        </label>
-                        <input 
-                            type="number" 
-                            min="1" 
-                            max="60000" 
-                            placeholder="Enter ending index (1-60000)" 
-                            class="input input-bordered" 
-                            id="ending_index"
-                            required 
-                            name="end_cifar_index"
-                        />
-                    </div>
+                      <label class="label">
+                          <span class="label-text">Range Size</span>
+                          <span class="label-text-alt" id="range-size">1</span>
+                      </label>
+                      <input 
+                          type="range" 
+                          min="1" 
+                          max="14" 
+                          value="1"
+                          class="range" 
+                          id="range_slider"
+                          required
+                      />
+                      <label class="label">
+                          <span class="label-text-alt text-error" id="range-error"></span>
+                      </label>
+                  </div>
+                  
+                  <!-- Add a hidden input for the end index -->
+                  <input type="hidden" id="ending_index" name="end_cifar_index" />
                     <div class="form-control">
                         <label class="label">
                             <span class="label-text">Activation Function</span>
@@ -95,46 +101,85 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const individualTab = document.getElementById('individual_tab');
-    const multipleTab = document.getElementById('multiple_tab');
-    const individualContent = document.getElementById('individual_content');
-    const multipleContent = document.getElementById('multiple_content');
-
-    // Tab switching logic
-    individualTab.addEventListener('click', function() {
-        individualTab.classList.add('tab-active');
-        multipleTab.classList.remove('tab-active');
-        individualContent.classList.remove('hidden');
-        multipleContent.classList.add('hidden');
-    });
-
-    multipleTab.addEventListener('click', function() {
-        multipleTab.classList.add('tab-active');
-        individualTab.classList.remove('tab-active');
-        multipleContent.classList.remove('hidden');
-        individualContent.classList.add('hidden');
-    });
-
-    // Validation for multiple analysis form
-    const beginningIndex = document.getElementById('beginning_index');
-    const endingIndex = document.getElementById('ending_index');
-
-    function validateIndices() {
-        if (beginningIndex.value && endingIndex.value) {
+  document.addEventListener('DOMContentLoaded', function() {
+      const individualTab = document.getElementById('individual_tab');
+      const multipleTab = document.getElementById('multiple_tab');
+      const individualContent = document.getElementById('individual_content');
+      const multipleContent = document.getElementById('multiple_content');
+      const beginningIndex = document.getElementById('beginning_index');
+      const rangeSlider = document.getElementById('range_slider');
+      const endingIndex = document.getElementById('ending_index');
+      const rangeSize = document.getElementById('range-size');
+      const rangeError = document.getElementById('range-error');
+      const multipleForm = document.querySelector('#multiple_content form');
+  
+      // Tab switching logic
+      individualTab.addEventListener('click', function() {
+          individualTab.classList.add('tab-active');
+          multipleTab.classList.remove('tab-active');
+          individualContent.classList.remove('hidden');
+          multipleContent.classList.add('hidden');
+      });
+  
+      multipleTab.addEventListener('click', function() {
+          multipleTab.classList.add('tab-active');
+          individualTab.classList.remove('tab-active');
+          multipleContent.classList.remove('hidden');
+          individualContent.classList.add('hidden');
+          // Trigger range update when switching to multiple tab
+          updateRange();
+      });
+  
+      function updateRange() {
+        if (beginningIndex.value) {
             const start = parseInt(beginningIndex.value);
-            const end = parseInt(endingIndex.value);
-            
-            if (end <= start) {
-                endingIndex.setCustomValidity('Ending index must be greater than beginning index');
+            const range = parseInt(rangeSlider.value);
+            const end = start + range - 1;
+    
+            // Update display values
+            rangeSize.textContent = `${range} images`;
+            endingIndex.value = end;
+    
+            // Validate end doesn't exceed maximum (49999 for 0-based indexing)
+            if (end > 49999) {
+                beginningIndex.setCustomValidity('Range exceeds maximum index of 49999');
+                rangeError.textContent = 'Range exceeds maximum index (49999)';
+            } else if (start < 0) {
+                beginningIndex.setCustomValidity('Starting index cannot be negative');
+                rangeError.textContent = 'Starting index must be >= 0';
             } else {
-                endingIndex.setCustomValidity('');
+                beginningIndex.setCustomValidity('');
+                rangeError.textContent = `End index: ${end}`;
             }
         }
     }
+  
+      // Add event listeners
+      beginningIndex.addEventListener('input', updateRange);
+      rangeSlider.addEventListener('input', updateRange);
+  
 
-    beginningIndex.addEventListener('input', validateIndices);
-    endingIndex.addEventListener('input', validateIndices);
-});
-</script>
+      // Form submission validation
+      multipleForm.addEventListener('submit', function(event) {
+        if (!beginningIndex.value) {
+            event.preventDefault();
+            beginningIndex.setCustomValidity('Please enter a starting index');
+            beginningIndex.reportValidity();
+        } else {
+            const start = parseInt(beginningIndex.value);
+            const range = parseInt(rangeSlider.value);
+            const end = start + range - 1;
+            
+            if (end > 49999) {
+                event.preventDefault();
+                beginningIndex.setCustomValidity('Range exceeds maximum index of 49999');
+                beginningIndex.reportValidity();
+            }
+        }
+      });
+  
+      // Initialize display values
+      rangeSize.textContent = `${rangeSlider.value} images`;
+  });
+  </script>
 {% endblock %}

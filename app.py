@@ -63,7 +63,15 @@ class Helper():
         ssim, _ = structural_similarity(ground_truth, reconstructed, full=True, win_size=3)
         
         return mse, psnr, ssim
-
+    
+    def encode_image(self, image_data):
+        buffer = BytesIO()
+        image_data.save(buffer, format='PNG')
+        return base64.b85encode(buffer.getvalue()).decode()
+    
+    def decode_image(self, b85_string):
+        return base64.b85decode(b85_string)
+    
 class LeNet(nn.Module):
     def __init__(self, activation_function='sigmoid'):
         super(LeNet, self).__init__()
@@ -142,16 +150,11 @@ def process_single_image(idx, activation_function):
     reconstructed_data = tt(dummy_data[0].cpu())
     mse, psnr, ssim = helper.check_similarity(tt(gt_data[0].cpu()), reconstructed_data)
     
-    # Convert the reconstructed image to base64 for display
-    buffer = BytesIO()
-    reconstructed_data.save(buffer, format='PNG')
-    img_str = base64.b64encode(buffer.getvalue()).decode()
-    
     return {
         'mse': float(mse),
         'psnr': float(psnr),
         'ssim': float(ssim),
-        'image': img_str
+        'image': helper.encode_image(reconstructed_data)
     }
 
 @app.route("/")
@@ -176,18 +179,30 @@ def handle_single_process(data):
         
 @app.route('/result')
 def result():
+    helper = Helper()
     try:
-        data = json.loads(request.args.get('data'))
-        cifar_index = data.get('cifar_index',0) 
+        # Get and validate data
+        data_str = request.args.get('data')
+        if not data_str:
+            raise ValueError("No data provided")
+            
+        data = json.loads(data_str)
+        cifar_index = data.get('cifar_index')
+        if cifar_index is None:
+            raise ValueError("No CIFAR index provided")
         
+        # Get and encode original image
         original_img = dst[cifar_index][0]
-        buffer = BytesIO()
-        original_img.save(buffer, format='PNG')
-        original_img_str = base64.b64encode(buffer.getvalue()).decode()
+        data['original_image'] = helper.encode_image(original_img)
         
-        return render_template('result.html', result=data, cifar_index=cifar_index, original_image=original_img_str)
+        # Validate reconstructed image exists
+        if 'image' not in data:
+            raise ValueError("No reconstructed image in data")
+
+        return render_template('result.html', result=data)
     except Exception as err:
-        print(f"Error at: {err}")
+        print(f"Error in result route: {err}")
+        print(f"Request args: {request.args}")
         return redirect(url_for('index'))
     
 @app.route('/handle_data_multiple', methods=['POST'])
@@ -225,8 +240,22 @@ def handle_process(data):
         print(f"Processing error: {err}")
         emit('error', str(err))
 
+@socketio.on('convert_image')
+def convert_image(data):
+    helper = Helper()
+    try:
+        base85_str = data['image']
+        bytes_data = helper.decode_image(base85_str)
+        base64_str = base64.b64encode(bytes_data).decode()
+        emit('image_converted', {
+            'image' : base64_str
+        }) 
+    except Exception as err:
+        emit ('error', str(err))
+
 @app.route('/chart')
 def chart():
+    helper = Helper()
     try:
         results_json = request.args.get('results')
         if not results_json:
@@ -238,16 +267,22 @@ def chart():
         for result in results:
             cifar_id = result['cifar_id']
             original_img = dst[cifar_id][0]
-            buffer = BytesIO()
-            original_img.save(buffer, format='PNG')
-            result['original_image'] = base64.b64encode(buffer.getvalue()).decode()
+            result['original_image'] = helper.encode_image(original_img)
         
         return render_template('chart_multiple.html', results=results)
     except Exception as e:
         print(f"Chart error: {e}")
         return redirect(url_for('index'))
 
+@app.template_filter('b85decode')
+def b85decode_filter(b85_string):
+    """Convert base85 to bytes"""
+    return base64.b85decode(b85_string)
 
+@app.template_filter('b64encode')
+def b64encode_filter(data):
+    """Convert bytes to base64"""
+    return base64.b64encode(data).decode()
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
