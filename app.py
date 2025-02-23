@@ -1,10 +1,10 @@
 # app.py
 import base64
 from io import BytesIO
+from random import Random
 import time
-from flask import Flask, json, jsonify, redirect, render_template, request, session, url_for
+from flask import Flask, json, redirect, render_template, request, url_for
 from flask_socketio import SocketIO, emit
-from flask_session import Session
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -161,11 +161,18 @@ def process_single_image(idx, activation_function):
 def index():
     return render_template("index.html")
 
-@app.route('/handle_data_single', methods=['POST'])
+
+# Single Choice
+
+@app.route('/handle_data_single', methods=['GET','POST'])
 def handle_data_single():
-    cifar_index = int(request.form['cifar_index'])
-    activation_function = request.form['activation_function']
-    return render_template("loading_single.html", cifar_index=cifar_index, activation_function=activation_function)
+    if request.method == 'POST':
+        cifar_index = int(request.form['cifar_index'])
+        activation_function = request.form['activation_function']
+
+        return render_template("loading_single.html", cifar_index=cifar_index, activation_function=activation_function)
+    else:
+        return redirect(url_for('index'))
 
 @socketio.on('start_single_process')
 def handle_single_process(data):
@@ -204,15 +211,31 @@ def result():
         print(f"Error in result route: {err}")
         print(f"Request args: {request.args}")
         return redirect(url_for('index'))
-    
-@app.route('/handle_data_multiple', methods=['POST'])
-def handle_data_multiple():
-    start_cifar_index = int(request.form['start_cifar_index'])
-    end_cifar_index = int(request.form['end_cifar_index'])
-    activation_function = request.form['activation_function']
-    
-    return render_template("loading_multiple.html", start_cifar_index=start_cifar_index, end_cifar_index=end_cifar_index, activation_function=activation_function)
+# Single Random
 
+@app.route('/handle_data_single_random', methods=['GET', 'POST'])
+def  handle_data_single_random():
+    if request.method == 'POST':
+        random = Random()
+        cifar_index = random.randint(0,49999)
+        activation_function = secrets.choice(['relu','sigmoid','tanh'])
+        return render_template("loading_single.html", cifar_index=cifar_index, activation_function=activation_function) 
+    else:
+        return redirect(url_for('index'))
+
+# Multiple Choices
+
+@app.route('/handle_data_multiple', methods=['GET','POST'])
+def handle_data_multiple():
+    if request.method == 'POST':
+        start_cifar_index = int(request.form['start_cifar_index'])
+        end_cifar_index = int(request.form['end_cifar_index'])
+        activation_function = request.form['activation_function']
+        
+        return render_template("loading_multiple.html", start_cifar_index=start_cifar_index, end_cifar_index=end_cifar_index, activation_function=activation_function)
+    else:
+        return redirect(url_for('index'))
+    
 @socketio.on('start_processing')
 def handle_process(data):
     try:
@@ -229,7 +252,8 @@ def handle_process(data):
             progress = ((i + 1)/total) * 100
             emit('progress', {
                 'progress': progress,
-                'current_result': result
+                'current_result': result,
+                'curr_id': cifar_id
             })
             time.sleep(0.1)
         
@@ -273,6 +297,26 @@ def chart():
     except Exception as e:
         print(f"Chart error: {e}")
         return redirect(url_for('index'))
+
+# Multiple Random
+
+@app.route('/handle_data_random_range', methods=['GET', 'POST'])
+def handle_data_random_range():  # Changed function name to match URL
+    if request.method == 'POST':
+        # Generate random range between 1-15 images
+        random = Random()
+        range_size = random.randint(1, 15)
+        start_index = random.randint(0, 49999 - range_size)
+        end_index = start_index + range_size - 1
+        activation_function = random.choice(['relu', 'sigmoid', 'tanh'])
+        
+        return render_template("loading_multiple.html", 
+                             start_cifar_index=start_index,
+                             end_cifar_index=end_index,
+                             activation_function=activation_function)
+    else:
+        return redirect(url_for('index'))
+# Encode Decode Image
 
 @app.template_filter('b85decode')
 def b85decode_filter(b85_string):

@@ -3,7 +3,10 @@
 {% block content %}
 <div class="flex flex-col items-center justify-center min-h-screen">
     <div class="w-96 p-6 bg-base-100 shadow-xl rounded-lg">
-        <h2 class="text-xl font-bold mb-4">Processing Images...</h2>
+        <h2 class="text-xl font-bold text-center mb-8">
+            Training with <em>{{ activation_function|title }}</em> activation function...
+        </h2>
+        
         
         <div class="mb-4">
             <div class="flex justify-between mb-1">
@@ -16,6 +19,7 @@
         </div>
 
         <div id="current-image" class="mb-4 flex justify-center"></div>
+        <div id="accent-line"></div>
         <div id="metrics" class="text-sm space-y-1"></div>
     </div>
 </div>
@@ -27,6 +31,7 @@
         const progressText = document.getElementById('progress-text');
         const currentImage = document.getElementById('current-image');
         const metrics = document.getElementById('metrics');
+        const accentLine = document.getElementById('accent-line');
 
         socket.on('connect', () => {
             console.log('Connected to server');
@@ -43,12 +48,13 @@
             progressText.textContent = Math.round(data.progress) + '%';
             
             if (data.current_result) {
-                
+     
                 socket.emit('convert_image', { 
                     image: data.current_result.image 
                 });
 
                 metrics.innerHTML = `
+                    <div class="font-semibold">Processing CIFAR Image #${data.curr_id}</div>
                     <div>MSE: ${data.current_result.mse.toFixed(2)}</div>
                     <div>PSNR: ${data.current_result.psnr.toFixed(2)}</div>
                     <div>SSIM: ${data.current_result.ssim.toFixed(2)}</div>
@@ -61,15 +67,16 @@
                 <img src="data:image/png;base64,${data.image}" 
                      class="w-32 h-32 object-contain"/>
             `;
+            accentLine.innerHTML = `
+                <div class="divider divider-accent"></div>
+            `;
         });
 
         socket.on('complete', function(data) {
             if (data.results) {
                 try {
-                    // Convert results to URL-safe string
                     const resultsStr = encodeURIComponent(JSON.stringify(data.results));
                     console.log('Processing complete, redirecting with results...');
-                    // Redirect to chart with results as query parameter
                     window.location.href = `{{ url_for('chart') }}?results=${resultsStr}`;
                 } catch (error) {
                     console.error('Error processing results:', error);

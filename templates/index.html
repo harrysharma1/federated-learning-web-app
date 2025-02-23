@@ -38,7 +38,10 @@
                             <option value="tanh">Tanh</option>
                         </select>
                     </div>
-                    <button class="btn btn-primary w-full">Analyze</button>
+                    <button class="btn btn-primary btn-soft w-full">Train</button>
+                </form>
+                <form class="space-y-4" action="{{ url_for('handle_data_single_random') }}", method="POST">
+                    <button class="btn btn-secondary btn-soft w-full">Train Random</button>
                 </form>
             </div>
 
@@ -93,8 +96,11 @@
                             <option value="tanh">Tanh</option>
                         </select>
                     </div>
-                    <button class="btn btn-primary w-full">Analyze Range</button>
+                    <button class="btn btn-primary btn-soft w-full">Train Range</button>
                 </form>
+              <form class="space-y-4" action="{{ url_for('handle_data_random_range') }}", method="POST">
+                  <button class="btn btn-secondary btn-soft w-full">Train Random Range</button>
+              </form> 
             </div>
         </div>
     </div>
