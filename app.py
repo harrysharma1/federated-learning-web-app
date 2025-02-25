@@ -3,7 +3,7 @@ import base64
 from io import BytesIO
 from random import Random
 import time
-from flask import Flask, json, redirect, render_template, request, url_for
+from flask import Flask, flash, json, redirect, render_template, request, url_for
 from flask_socketio import SocketIO, emit
 import torch
 import torch.nn as nn
@@ -12,6 +12,7 @@ from torchvision import datasets, transforms
 import numpy as np
 from skimage.metrics import mean_squared_error, peak_signal_noise_ratio, structural_similarity
 import secrets
+from PIL import Image
 
 
 app = Flask(__name__)
@@ -334,6 +335,7 @@ def handle_data_random_range():  # Changed function name to match URL
                              activation_function=activation_function)
     else:
         return redirect(url_for('index'))
+
 # Encode Decode Image
 
 @app.template_filter('b85decode')
