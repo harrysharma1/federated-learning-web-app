@@ -68,17 +68,17 @@ def register_socket_io_handlers(socketio, image_processing):
             emit('complete',{'result':result})
         except Exception as err:
             emit('error', str(err))
-
-def register_routes(app, helper, socketio, image_processing):
-    # Register class-based views
-    app.add_url_rule('/handle_data_single', 
-                    view_func=SingleCifarView.as_view('handle_data_single'))
-    
-    app.add_url_rule('/handle_data_single_random', 
-                    view_func=SingleRandomCifarView.as_view('handle_data_single_random'))
-    
-    app.add_url_rule('/result', 
-                    view_func=ResultView.as_view('result', helper, image_processing))
-    
-    # Register socket handlers
-    register_socket_io_handlers(socketio, image_processing)
+class SingleCifarViewRegister():
+    def register_routes(self, app, helper, socketio, image_processing):
+        # Register class-based views
+        app.add_url_rule('/handle_data_single', 
+                        view_func=SingleCifarView.as_view('handle_data_single'))
+        
+        app.add_url_rule('/handle_data_single_random', 
+                        view_func=SingleRandomCifarView.as_view('handle_data_single_random'))
+        
+        app.add_url_rule('/result', 
+                        view_func=ResultView.as_view('result', helper, image_processing))
+        
+        # Register socket handlers
+        register_socket_io_handlers(socketio, image_processing)

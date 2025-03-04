@@ -8,7 +8,8 @@ import secrets
 from PIL import Image
 from src.dlg import LeNet, ImageProcessing
 from src.utils import Helper, LocalSession
-from views.single_cifar import register_routes
+from views.single_cifar import SingleCifarViewRegister
+from views.multiple_cifar import MultipleCifarViewRegister
 from torchvision import transforms
 
 app = Flask(__name__)
@@ -25,103 +26,8 @@ image_processing = ImageProcessing()
 def index():
     return render_template("index.html")
 
-register_routes(app=app, helper=Helper(), socketio=socketio, image_processing=image_processing)
-
-
-
-# Multiple Choices
-
-@app.route('/handle_data_multiple', methods=['GET','POST'])
-def handle_data_multiple():
-    if request.method == 'POST':
-        start_cifar_index = int(request.form['start_cifar_index'])
-        end_cifar_index = int(request.form['end_cifar_index'])
-        activation_function = request.form['activation_function']
-        
-        return render_template("loading_multiple.html", start_cifar_index=start_cifar_index, end_cifar_index=end_cifar_index, activation_function=activation_function)
-    else:
-        return redirect(url_for('index'))
-    
-@socketio.on('start_processing')
-def handle_process(data):
-    try:
-        start_cifar_index = data['start_index']
-        end_cifar_index = data['end_index']
-        activation_function = data['activation_function']
-        total = end_cifar_index - start_cifar_index + 1
-        local_session.clear()
-        results = []
-        for i, cifar_id in enumerate(range(start_cifar_index, end_cifar_index + 1)):
-            result = image_processing.process_single_image(cifar_id, activation_function)
-            results.append({'cifar_id': cifar_id, **result})
-            result_with_id = {'cifar_id': cifar_id, **result}
-            local_session.add(result_with_id)
-            progress = ((i + 1)/total) * 100
-            emit('progress', {
-                'progress': progress,
-                'current_result': result,
-                'curr_id': cifar_id
-            })
-            time.sleep(0.1)
-        
-        # Send results directly to client
-        emit('complete', {'results': results})
-        
-    except Exception as err:
-        print(f"Processing error: {err}")
-        emit('error', str(err))
-
-@socketio.on('convert_image')
-def convert_image(data):
-    helper = Helper()
-    try:
-        base85_str = data['image']
-        bytes_data = helper.decode_image(base85_str)
-        base64_str = base64.b64encode(bytes_data).decode()
-        emit('image_converted', {
-            'image' : base64_str
-        }) 
-    except Exception as err:
-        emit ('error', str(err))
-
-@app.route('/chart')
-def chart():
-    helper = Helper()
-    try:
-        results = local_session.get_results()
-        if not results:
-            return redirect(url_for('index'))
-        
-        # Add original images
-        for result in results:
-            cifar_id = result['cifar_id']
-            original_img = image_processing.dst[cifar_id][0]
-            result['original_image'] = helper.encode_image(original_img)
-        
-        return render_template('chart_multiple.html', results=results)
-    except Exception as e:
-        print(f"Chart error: {e}")
-        return redirect(url_for('index'))    
-
-# Multiple Random
-
-@app.route('/handle_data_random_range', methods=['GET', 'POST'])
-def handle_data_random_range():  # Changed function name to match URL
-    if request.method == 'POST':
-        # Generate random range between 1-15 images
-        random = Random()
-        range_size = random.randint(1, 15)
-        start_index = random.randint(0, 49999 - range_size)
-        end_index = start_index + range_size - 1
-        activation_function = random.choice(['relu', 'sigmoid', 'tanh'])
-        
-        return render_template("loading_multiple.html", 
-                             start_cifar_index=start_index,
-                             end_cifar_index=end_index,
-                             activation_function=activation_function)
-    else:
-        return redirect(url_for('index'))
-
+SingleCifarViewRegister().register_routes(app=app, helper=Helper(), socketio=socketio, image_processing=image_processing)
+MultipleCifarViewRegister().register_routes(app=app, socketio=socketio, image_processing=image_processing, helper=Helper(), local_session=local_session)
 # File upload 
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
