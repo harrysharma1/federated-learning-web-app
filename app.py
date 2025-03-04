@@ -8,6 +8,7 @@ import secrets
 from PIL import Image
 from src.dlg import LeNet, ImageProcessing
 from src.utils import Helper, LocalSession
+from views.single_cifar import register_routes
 from torchvision import transforms
 
 app = Flask(__name__)
@@ -24,67 +25,9 @@ image_processing = ImageProcessing()
 def index():
     return render_template("index.html")
 
+register_routes(app=app, helper=Helper(), socketio=socketio, image_processing=image_processing)
 
-# Single Choice
 
-@app.route('/handle_data_single', methods=['GET','POST'])
-def handle_data_single():
-    if request.method == 'POST':
-        cifar_index = int(request.form['cifar_index'])
-        activation_function = request.form['activation_function']
-
-        return render_template("loading_single.html", cifar_index=cifar_index, activation_function=activation_function)
-    else:
-        return redirect(url_for('index'))
-
-@socketio.on('start_single_process')
-def handle_single_process(data):
-    cifar_index = data['cifar_index']
-    activation_function = data['activation_function']
-    try:
-        result = image_processing.process_single_image(cifar_index, activation_function)
-        emit('complete',{'result':result})
-    except Exception as err:
-        emit('error', str(err))
-        
-@app.route('/result')
-def result():
-    helper = Helper()
-    try:
-        # Get and validate data
-        data_str = request.args.get('data')
-        if not data_str:
-            raise ValueError("No data provided")
-            
-        data = json.loads(data_str)
-        cifar_index = data.get('cifar_index')
-        if cifar_index is None:
-            raise ValueError("No CIFAR index provided")
-        
-        # Get and encode original image
-        original_img = image_processing.dst[cifar_index][0]
-        data['original_image'] = helper.encode_image(original_img)
-        
-        # Validate reconstructed image exists
-        if 'image' not in data:
-            raise ValueError("No reconstructed image in data")
-
-        return render_template('result.html', result=data)
-    except Exception as err:
-        print(f"Error in result route: {err}")
-        print(f"Request args: {request.args}")
-        return redirect(url_for('index'))
-# Single Random
-
-@app.route('/handle_data_single_random', methods=['GET', 'POST'])
-def  handle_data_single_random():
-    if request.method == 'POST':
-        random = Random()
-        cifar_index = random.randint(0,49999)
-        activation_function = secrets.choice(['relu','sigmoid','tanh'])
-        return render_template("loading_single.html", cifar_index=cifar_index, activation_function=activation_function) 
-    else:
-        return redirect(url_for('index'))
 
 # Multiple Choices
 
