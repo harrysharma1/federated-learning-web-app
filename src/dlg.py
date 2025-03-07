@@ -105,16 +105,62 @@ class ImageProcessing():
         }
 
     def process_custom_image(self, image, activation_function):
-        try:
-            image = image.resize((32,32), Image.LANCZOS)
-            
-            transform = transforms.ToTensor()
-            input_tensor = transform(image).unsqueeze(0)
-            
-            result = self.process_single_image(0, activation_function)
-            print(result)    
-            return result
+        helper = Helper()
+        net = LeNet(activation_function).to(self.device)
+        net.apply(helper.weights_init)
+        criterion = helper.cross_entropy_for_onehot
         
-        except Exception as err:
-            print(f"Error processing custom image: {err}")
-    
+        transform = transforms.Compose([transforms.PILToTensor()])
+        image_tensor = transform(image)
+        
+        gt_data = image_tensor.to(self.device)
+        
+        with torch.no_grad():
+            output = net(gt_data)
+            _, predict = torch.max(output.data, 1)
+            
+        gt_label = predict.clone()
+        gt_onehot_label = helper.label_to_onehot(gt_label)
+        
+        out = net(gt_data)
+        y = (out, gt_onehot_label)
+        dy_dx = torch.autograd.grad(y, net.parameters())
+        original_dy_dx = list((_.detach().clone() for _ in dy_dx))
+        
+        dummy_data = torch.randn(gt_data.size()).to(self.device).requires_grad_(True)
+        dummy_label = torch.randn(gt_onehot_label.size()).to(self.device).requires_grad_(True)
+        optimizer = torch.optim.LBFGS([dummy_data, dummy_label])
+        
+        for _ in range(300):
+            def closure():
+                optimizer.zero_grad()
+                pred = net(dummy_data)
+                dummy_onehot_label = F.softmax(dummy_label, dim=-1)
+                dummy_loss = criterion(pred, dummy_onehot_label)
+                dummy_dy_dx = torch.autograd.grad(dummy_loss, net.parameters(), create_graph=True)
+                
+                grad_diff = 0
+                for gx, gy in zip(dummy_dy_dx, original_dy_dx):
+                    grad_diff += ((gx-gy)** 2).sum()
+                grad_diff.backward()
+                
+                return grad_diff
+            optimizer.step(closure)
+            
+        reconstructed_data = self.tt(dummy_data[0].cpu())
+        original_image_pil = self.tt(gt_data[0].cpu())
+        mse, psnr ,ssim = helper.check_similarity(original_image_pil, reconstructed_data)
+        
+        predicted_class = predict.item()
+        classes = [f'Class{i}' for i in range(100)]
+        if hasattr(self.dst, 'classes'):
+            classes = self.dst.classes
+            
+        return {
+            'mse': float(mse),
+            'psnr': float(psnr),
+            'ssim': float(ssim),
+            'image': helper.encode_image(reconstructed_data),
+            'predicted_class': predicted_class,
+            'predicted_label': classes[predicted_class]
+        }

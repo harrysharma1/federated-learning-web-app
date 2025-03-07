@@ -75,28 +75,24 @@ def handle_custom_process(data):
         original_image = helper.decode_image(data['original_image'])
         image = Image.open(BytesIO(original_image))
         
-        # Resize to 32x32 if needed
-        if image.size != (32, 32):
-            image = image.resize((32, 32), Image.LANCZOS)
-        
-        # Convert to tensor
+        if image.size != (32,32):
+            image = image.resize((32,32), Image.LANCZOS)
+            
         transform = transforms.ToTensor()
         input_tensor = transform(image).unsqueeze(0).to(image_processing.device)
         
-        # Process image using existing pipeline
-        result = image_processing.process_single_image(0, data['activation_function'])
+        result = image_processing.process_custom_image(input_tensor, data['activation_function'])
         
-        # Add original image to result
         result['original_image'] = data['original_image']
+        result['activation_function'] = data['activation_function']
         
-        # Store in session
         local_session.add(result)
         
         emit('complete', {'result': result})
-        
     except Exception as err:
-        print(f"Custom process error: {err}")
+        print(f"Cutstom Image Process Error: {err}")
         emit('error', str(err))
+
 
 @app.route('/result_custom')
 def result_custom():
