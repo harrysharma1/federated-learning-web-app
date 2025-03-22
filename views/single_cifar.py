@@ -71,13 +71,13 @@ def register_socket_io_handlers(socketio, image_processing):
 class SingleCifarViewRegister():
     def register_routes(self, app, helper, socketio, image_processing):
         # Register class-based views
-        app.add_url_rule('/handle_data_single', 
+        app.add_url_rule('/interactive/handle_data_single', 
                         view_func=SingleCifarView.as_view('handle_data_single'))
         
-        app.add_url_rule('/handle_data_single_random', 
+        app.add_url_rule('/interactive/handle_data_single_random', 
                         view_func=SingleRandomCifarView.as_view('handle_data_single_random'))
         
-        app.add_url_rule('/result', 
+        app.add_url_rule('/interactive/result', 
                         view_func=ResultView.as_view('result', helper, image_processing))
         
         # Register socket handlers

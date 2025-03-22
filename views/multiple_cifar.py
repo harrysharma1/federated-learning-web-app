@@ -1,6 +1,3 @@
-
-
-
 import base64
 from random import Random
 import time
@@ -104,13 +101,13 @@ def register_socket_io_handlers(socketio, image_processing, local_session, helpe
 
 class MultipleCifarViewRegister():
     def register_routes(self, app, helper, socketio, local_session, image_processing):
-        app.add_url_rule('/handle_data_multiple', 
+        app.add_url_rule('/interactive/handle_data_multiple', 
                         view_func=MultipleCifarView.as_view('handle_data_multiple'))
         
-        app.add_url_rule('/handle_data_random_range', 
+        app.add_url_rule('/interactive/handle_data_random_range', 
                         view_func=RandomRangeCifarView.as_view('handle_data_random_range'))
         
-        app.add_url_rule('/chart', 
+        app.add_url_rule('/interactive/chart', 
                         view_func=ChartView.as_view('chart', helper, local_session, image_processing))
         
         register_socket_io_handlers(socketio=socketio, image_processing=image_processing, local_session=local_session, helper=helper)

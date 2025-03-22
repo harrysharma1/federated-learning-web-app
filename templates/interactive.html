@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="flex flex-row min-h-screen justify-center items-center">
+    <div class="card w-96 bg-base-100 shadow-xl">
+        <!-- Tabs using DaisyUI's role tabs -->
+        <div role="tablist" class="tabs tabs-boxed bg-base-200 m-2">
+            <a role="tab" class="tab" id="individual_tab">Individual</a>
+            <a role="tab" class="tab" id="multiple_tab">Multiple</a>
+            <a role="tab" class="tab tab-active" id="upload_tab">Upload</a>
+        </div>
+
+        <div class="tab-panels p-4">
+            <!-- Individual Analysis Form (hidden initially) -->
+            <div id="individual_content" class="space-y-4 hidden">
+                <!-- Existing individual content -->
+                <h2 class="card-title justify-center">Individual CIFAR Analysis</h2>
+                <form class="space-y-4" action="{{ url_for('handle_data_single') }}", method="POST">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">CIFAR Index</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            min="0" 
+                            max="49999" 
+                            placeholder="Enter index (0-49999)" 
+                            class="input input-bordered" 
+                            required 
+                            name="cifar_index"
+                        />
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Activation Function</span>
+                        </label>
+                        <select class="select select-bordered w-full" name="activation_function" required>
+                            <option value="" disabled selected>Select Activation Function</option>
+                            <option value="relu">ReLU</option>
+                            <option value="sigmoid">Sigmoid</option>
+                            <option value="tanh">Tanh</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary btn-soft w-full">Train</button>
+                </form>
+                <form class="space-y-4" action="{{ url_for('handle_data_single_random') }}", method="POST">
+                    <button class="btn btn-secondary btn-soft w-full">Train Random</button>
+                </form>
+            </div>
+
+            <!-- Multiple Analysis Form (hidden initially) -->
+            <div id="multiple_content" class="space-y-4 hidden">
+                <!-- Existing multiple content -->
+                <h2 class="card-title justify-center">Multiple CIFAR Analysis</h2>
+                <form class="space-y-4" action="{{ url_for('handle_data_multiple') }}", method="POST">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Beginning Index</span>
+                        </label>
+                        <input 
+                            type="number" 
+                            min="0" 
+                            max="49999" 
+                            placeholder="Enter starting index (0-49999)" 
+                            class="input input-bordered" 
+                            id="beginning_index"
+                            required
+                            name="start_cifar_index"
+                        />
+                    </div>
+                    <div class="form-control">
+                      <label class="label">
+                          <span class="label-text">Range Size</span>
+                          <span class="label-text-alt" id="range-size">1</span>
+                      </label>
+                      <input 
+                          type="range" 
+                          min="2" 
+                          max="500" 
+                          value="1"
+                          class="range" 
+                          id="range_slider"
+                          required
+                      />
+                      <label class="label">
+                          <span class="label-text-alt text-error" id="range-error"></span>
+                      </label>
+                    </div>
+                  
+                    <!-- Add a hidden input for the end index -->
+                    <input type="hidden" id="ending_index" name="end_cifar_index" />
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Activation Function</span>
+                        </label>
+                        <select class="select select-bordered w-full" name="activation_function" required>
+                            <option value="" disabled selected>Select Activation Function</option>
+                            <option value="relu">ReLU</option>
+                            <option value="sigmoid">Sigmoid</option>
+                            <option value="tanh">Tanh</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary btn-soft w-full">Train Range</button>
+                </form>
+                <form class="space-y-4" action="{{ url_for('handle_data_random_range') }}", method="POST">
+                    <button class="btn btn-secondary btn-soft w-full">Train Random Range</button>
+                </form> 
+            </div>
+
+            <!-- File Upload Form (visible initially) -->
+            <div id="upload_content" class="space-y-4">
+                <h2 class="card-title justify-center">Upload Custom Images</h2>
+                <form class="space-y-4" action="{{ url_for('handle_file_upload') }}" method="POST" enctype="multipart/form-data">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Upload Images</span>
+                        </label>
+                        <div class="flex flex-col items-center justify-center w-full">
+                            <label for="file_upload" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-base-200 border-base-300 hover:bg-base-300">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <svg class="w-8 h-8 mb-2 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                    </svg>
+                                    <p class="mb-1 text-sm text-gray-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                                    <p class="text-xs text-gray-500">PNG, JPG or JPEG (32x32px recommended)</p>
+                                </div>
+                                <input id="file_upload" type="file" class="hidden" name="images" accept="image/png, image/jpeg, image/jpg" multiple required />
+                            </label>
+                        </div>
+                        <div id="file_list" class="mt-2 text-sm text-base-content"></div>
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Activation Function</span>
+                        </label>
+                        <select class="select select-bordered w-full" name="activation_function" required>
+                            <option value="" disabled selected>Select Activation Function</option>
+                            <option value="relu">ReLU</option>
+                            <option value="sigmoid">Sigmoid</option>
+                            <option value="tanh">Tanh</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary btn-soft w-full">Upload and Train</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const individualTab = document.getElementById('individual_tab');
+    const multipleTab = document.getElementById('multiple_tab');
+    const uploadTab = document.getElementById('upload_tab');
+    const individualContent = document.getElementById('individual_content');
+    const multipleContent = document.getElementById('multiple_content');
+    const uploadContent = document.getElementById('upload_content');
+    const beginningIndex = document.getElementById('beginning_index');
+    const rangeSlider = document.getElementById('range_slider');
+    const endingIndex = document.getElementById('ending_index');
+    const rangeSize = document.getElementById('range-size');
+    const rangeError = document.getElementById('range-error');
+    const multipleForm = document.querySelector('#multiple_content form');
+    const fileUpload = document.getElementById('file_upload');
+    const fileList = document.getElementById('file_list');
+
+    // Tab switching logic
+    individualTab.addEventListener('click', function() {
+        individualTab.classList.add('tab-active');
+        multipleTab.classList.remove('tab-active');
+        uploadTab.classList.remove('tab-active');
+        individualContent.classList.remove('hidden');
+        multipleContent.classList.add('hidden');
+        uploadContent.classList.add('hidden');
+    });
+
+    multipleTab.addEventListener('click', function() {
+        multipleTab.classList.add('tab-active');
+        individualTab.classList.remove('tab-active');
+        uploadTab.classList.remove('tab-active');
+        multipleContent.classList.remove('hidden');
+        individualContent.classList.add('hidden');
+        uploadContent.classList.add('hidden');
+        // Trigger range update when switching to multiple tab
+        updateRange();
+    });
+
+    uploadTab.addEventListener('click', function() {
+        uploadTab.classList.add('tab-active');
+        individualTab.classList.remove('tab-active');
+        multipleTab.classList.remove('tab-active');
+        uploadContent.classList.remove('hidden');
+        individualContent.classList.add('hidden');
+        multipleContent.classList.add('hidden');
+    });
+
+    function updateRange() {
+        if (beginningIndex.value) {
+            const start = parseInt(beginningIndex.value);
+            const range = parseInt(rangeSlider.value);
+            const end = start + range - 1;
+    
+            // Update display values
+            rangeSize.textContent = `${range} images`;
+            endingIndex.value = end;
+    
+            // Validate end doesn't exceed maximum (49999 for 0-based indexing)
+            if (end > 49999) {
+                beginningIndex.setCustomValidity('Range exceeds maximum index of 49999');
+                rangeError.textContent = 'Range exceeds maximum index (49999)';
+            } else if (start < 0) {
+                beginningIndex.setCustomValidity('Starting index cannot be negative');
+                rangeError.textContent = 'Starting index must be >= 0';
+            } else {
+                beginningIndex.setCustomValidity('');
+                rangeError.textContent = `End index: ${end}`;
+            }
+        }
+    }
+
+    // Add event listeners
+    beginningIndex.addEventListener('input', updateRange);
+    rangeSlider.addEventListener('input', updateRange);
+
+    // Form submission validation
+    multipleForm.addEventListener('submit', function(event) {
+        if (!beginningIndex.value) {
+            event.preventDefault();
+            beginningIndex.setCustomValidity('Please enter a starting index');
+            beginningIndex.reportValidity();
+        } else {
+            const start = parseInt(beginningIndex.value);
+            const range = parseInt(rangeSlider.value);
+            const end = start + range - 1;
+            
+            if (end > 49999) {
+                event.preventDefault();
+                beginningIndex.setCustomValidity('Range exceeds maximum index of 49999');
+                beginningIndex.reportValidity();
+            }
+        }
+    });
+
+    // File upload handling
+    fileUpload.addEventListener('change', function(event) {
+        const files = event.target.files;
+        
+        if (files.length > 0) {
+            fileList.innerHTML = '<p class="font-semibold">Selected files:</p>';
+            const fileCount = Math.min(files.length, 5); // Show max 5 files in the list
+            
+            for (let i = 0; i < fileCount; i++) {
+                fileList.innerHTML += `<p>- ${files[i].name}</p>`;
+            }
+            
+            if (files.length > 5) {
+                fileList.innerHTML += `<p>...and ${files.length - 5} more files</p>`;
+            }
+            
+            fileList.innerHTML += `<p class="mt-2">Total: ${files.length} file(s) selected</p>`;
+        } else {
+            fileList.innerHTML = '';
+        }
+    });
+
+    // Initialize display values
+    if (rangeSize) {
+        rangeSize.textContent = `${rangeSlider.value} images`;
+    }
+});
+</script>
+{% endblock %}

@@ -10,6 +10,7 @@ from src.dlg import LeNet, ImageProcessing
 from src.utils import Helper, LocalSession
 from views.single_cifar import SingleCifarViewRegister
 from views.multiple_cifar import MultipleCifarViewRegister
+from views.index import IndexViewRegister
 from torchvision import transforms
 
 app = Flask(__name__)
@@ -22,10 +23,12 @@ socketio = SocketIO(app)
 local_session = LocalSession()
 image_processing = ImageProcessing()
 
-@app.route("/")
-def index():
-    return render_template("index.html")
 
+@app.route("/interactive")
+def interactive():
+    return render_template("interactive.html")
+
+IndexViewRegister().register_routes(app=app)
 SingleCifarViewRegister().register_routes(app=app, helper=Helper(), socketio=socketio, image_processing=image_processing)
 MultipleCifarViewRegister().register_routes(app=app, socketio=socketio, image_processing=image_processing, helper=Helper(), local_session=local_session)
 # File upload 

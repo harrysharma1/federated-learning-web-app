@@ -12,7 +12,12 @@
     <title>Results</title>
   </head>
   <body>
-    {% block content %}
+    <div class="sticky top-0 z-50">
+      {% include '_partials_/navbar.html' %}
+    </div>
+    <div class="container mx-auto px-4 py-6">
+      {% block content %}
+    </div>
     {% endblock %}
   </body>
 </html>
