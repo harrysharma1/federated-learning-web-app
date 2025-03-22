@@ -110,8 +110,8 @@ class ImageProcessing():
         net.apply(helper.weights_init)
         criterion = helper.cross_entropy_for_onehot
         
-        transform = transforms.Compose([transforms.PILToTensor()])
-        image_tensor = transform(image)
+        transform = transforms.Compose([transforms.ToTensor()])
+        image_tensor = transform(image).unsqueeze(0).to(self.device)
         
         gt_data = image_tensor.to(self.device)
         
@@ -123,7 +123,7 @@ class ImageProcessing():
         gt_onehot_label = helper.label_to_onehot(gt_label)
         
         out = net(gt_data)
-        y = (out, gt_onehot_label)
+        y = criterion(out, gt_onehot_label)
         dy_dx = torch.autograd.grad(y, net.parameters())
         original_dy_dx = list((_.detach().clone() for _ in dy_dx))
         

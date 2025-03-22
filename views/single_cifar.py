@@ -52,7 +52,7 @@ class ResultView(MethodView):
             if 'image' not in data:
                 raise ValueError("No reconstructed image in data")
 
-            return render_template('result.html', result=data)
+            return render_template('result_single.html', result=data)
         except Exception as err:
             print(f"Error in result route: {err}")
             print(f"Request args: {request.args}")
