@@ -9,7 +9,8 @@ from src.dlg import ImageProcessing
 from src.utils import Helper, LocalSession
 from views.single_cifar import SingleCifarViewRegister
 from views.multiple_cifar import MultipleCifarViewRegister
-from views.index import IndexViewRegister, InteractiveViewRegister
+from views.index import IndexViewRegister
+from views.misc import MiscViewRegister
 from views.custom_image import CustomImageViewRegister
 
 
@@ -25,7 +26,7 @@ image_processing = ImageProcessing()
 
 # Register All Views for Web Application
 IndexViewRegister().register_routes(app=app)
-InteractiveViewRegister().register_routes(app=app)
+MiscViewRegister().register_routes(app=app)
 SingleCifarViewRegister().register_routes(app=app, helper=Helper(), socketio=socketio, image_processing=image_processing)
 MultipleCifarViewRegister().register_routes(app=app, socketio=socketio, image_processing=image_processing, helper=Helper(), local_session=local_session)
 CustomImageViewRegister().register_routes(app=app, socketio=socketio, image_processing=image_processing,local_session=local_session, helper=Helper())
@@ -43,4 +44,4 @@ def b64encode_filter(data):
     return base64.b64encode(data).decode()
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=True, use_reloader=True)

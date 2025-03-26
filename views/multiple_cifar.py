@@ -1,37 +1,36 @@
 import base64
 from random import Random
+import secrets
 import time
 from flask import Blueprint, redirect, render_template, request, url_for
 from flask.views import MethodView
 from flask_socketio import emit
-
-
-multiple_cifar_blueprint = Blueprint('multiple_cifar', __name__)
 
 class MultipleCifarView(MethodView):
     def post(self):
         start_cifar_index = int(request.form['start_cifar_index'])
         end_cifar_index = int(request.form['end_cifar_index'])
         activation_function = request.form['activation_function']
-        
-        return render_template("loading_multiple.html", start_cifar_index=start_cifar_index, end_cifar_index=end_cifar_index, activation_function=activation_function) 
+        noise_scale = float(request.form['noise_scale_multiple'])/100 
+        return render_template("loading_multiple.html", start_cifar_index=start_cifar_index, end_cifar_index=end_cifar_index, activation_function=activation_function, noise_scale=noise_scale) 
 
     def get(self):
         return redirect(url_for('index'))
 
 class RandomRangeCifarView(MethodView):
     def post(self):
-        # Generate random range between 1-15 images
         random = Random()
         range_size = random.randint(1, 15)
         start_index = random.randint(0, 49999 - range_size)
         end_index = start_index + range_size - 1
-        activation_function = random.choice(['relu', 'sigmoid', 'tanh'])
+        noise_scale = float(random.randint(0.0,1.0))
+        activation_function = secrets.choice(['relu', 'sigmoid', 'tanh'])
         
         return render_template("loading_multiple.html", 
                              start_cifar_index=start_index,
                              end_cifar_index=end_index,
-                             activation_function=activation_function)
+                             activation_function=activation_function,
+                             noise_scale = noise_scale)
 
 class ChartView(MethodView):
     def __init__(self, helper, local_session, image_processing):
@@ -65,6 +64,7 @@ def register_socket_io_handlers(socketio, image_processing, local_session, helpe
             end_cifar_index = data['end_index']
             activation_function = data['activation_function']
             total = end_cifar_index - start_cifar_index + 1
+            noise_scale = data['noise_scale']
             local_session.clear()
             results = []
             for i, cifar_id in enumerate(range(start_cifar_index, end_cifar_index + 1)):

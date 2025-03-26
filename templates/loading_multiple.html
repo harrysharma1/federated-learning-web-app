@@ -4,7 +4,7 @@
 <div class="flex flex-col items-center justify-center min-h-screen">
     <div class="w-96 p-6 bg-base-100 shadow-xl rounded-lg">
         <h2 class="text-xl font-bold text-center mb-8">
-            Training with <em>{{ activation_function|title }}</em> activation function...
+            Training with <em>{{ activation_function|title }}</em> activation function at Noise Level <em>{{ noise_scale }}</em>...
         </h2>
         
         
@@ -38,7 +38,8 @@
             socket.emit('start_processing', {
                 start_index: {{ start_cifar_index }},
                 end_index: {{ end_cifar_index }},
-                activation_function: '{{ activation_function }}'
+                activation_function: '{{ activation_function }}',
+                noise_scale: {{ noise_scale }}
             });
         });
 

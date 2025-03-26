@@ -31,6 +31,27 @@
                     </div>
                     <div class="form-control">
                         <label class="label">
+                            <span class="label-text">Differential Privacy (Noise)</span>
+                            <span class="label-text-alt" id="noise-scale-value-single">0</span>
+                        </label>
+                        <input 
+                            type="range" 
+                            min="0" 
+                            max="100" 
+                            value="0"
+                            class="range range-primary" 
+                            step="1"
+                            name="noise_scale_single"
+                            id="noise-scale-slider-single"
+                        />
+                        <div class="w-full flex justify-between text-xs px-2 mt-1">
+                            <span>None</span>
+                            <span>Medium</span>
+                            <span>High</span>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
                             <span class="label-text">Activation Function</span>
                         </label>
                         <select class="select select-bordered w-full" name="activation_function" required>
@@ -85,7 +106,27 @@
                           <span class="label-text-alt text-error" id="range-error"></span>
                       </label>
                     </div>
-                  
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Differential Privacy (Noise)</span>
+                            <span class="label-text-alt" id="noise-scale-value-multiple">0</span>
+                        </label>
+                        <input 
+                            type="range" 
+                            min="0" 
+                            max="100" 
+                            value="0"
+                            class="range range-primary" 
+                            step="1"
+                            name="noise_scale_multiple"
+                            id="noise-scale-slider-multiple"
+                        />
+                        <div class="w-full flex justify-between text-xs px-2 mt-1">
+                            <span>None</span>
+                            <span>Medium</span>
+                            <span>High</span>
+                        </div>
+                    </div>
                     <!-- Add a hidden input for the end index -->
                     <input type="hidden" id="ending_index" name="end_cifar_index" />
                     <div class="form-control">
@@ -138,6 +179,27 @@
                             <option value="sigmoid">Sigmoid</option>
                             <option value="tanh">Tanh</option>
                         </select>
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Differential Privacy (Noise)</span>
+                            <span class="label-text-alt" id="noise-scale-value-custom">0</span>
+                        </label>
+                        <input 
+                            type="range" 
+                            min="0" 
+                            max="100" 
+                            value="0"
+                            class="range range-primary" 
+                            step="1"
+                            name="noise_scale_custom"
+                            id="noise-scale-slider-custom"
+                        />
+                        <div class="w-full flex justify-between text-xs px-2 mt-1">
+                            <span>None</span>
+                            <span>Medium</span>
+                            <span>High</span>
+                        </div>
                     </div>
                     <button class="btn btn-primary btn-soft w-full">Upload and Train</button>
                 </form>
@@ -262,9 +324,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Initialize display values
+    // Initialise display values
     if (rangeSize) {
         rangeSize.textContent = `${rangeSlider.value} images`;
+    }
+
+    // Add Differential Privacy noise scale slider update
+    // Use unique variable names for each slider
+    const singleNoiseScaleSlider = document.getElementById('noise-scale-slider-single');
+    const singleNoiseScaleValue = document.getElementById('noise-scale-value-single');
+    if (singleNoiseScaleSlider) {
+        singleNoiseScaleSlider.addEventListener('input', function() {
+            const value = (this.value / 100).toFixed(2);
+            singleNoiseScaleValue.textContent = value;
+        });
+    }
+
+    // Multiple
+    const multipleNoiseScaleSlider = document.getElementById('noise-scale-slider-multiple');
+    const multipleNoiseScaleValue = document.getElementById('noise-scale-value-multiple');
+    if (multipleNoiseScaleSlider) {
+        multipleNoiseScaleSlider.addEventListener('input', function() {
+            const value = (this.value / 100).toFixed(2);
+            multipleNoiseScaleValue.textContent = value;
+        });
+    }
+
+    // Custom
+    const customNoiseScaleSlider = document.getElementById('noise-scale-slider-custom');
+    const customNoiseScaleValue = document.getElementById('noise-scale-value-custom');
+    if (customNoiseScaleSlider) {
+        customNoiseScaleSlider.addEventListener('input', function() {
+            const value = (this.value / 100).toFixed(2);
+            customNoiseScaleValue.textContent = value;
+        });
     }
 });
 </script>

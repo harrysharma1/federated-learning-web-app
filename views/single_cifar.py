@@ -1,17 +1,15 @@
 from random import Random
 import secrets
-from flask import Blueprint, json, redirect, render_template, request, url_for
+from flask import json, redirect, render_template, request, url_for
 from flask.views import MethodView
 from flask_socketio import emit
-
-single_cifar_blueprint = Blueprint('single_cifar', __name__)
 
 class SingleCifarView(MethodView):    
     def post(self):
         cifar_index = int(request.form['cifar_index'])
         activation_function = request.form['activation_function']
-
-        return render_template("loading_single.html", cifar_index=cifar_index, activation_function=activation_function) 
+        noise_scale = float(request.form['noise_scale_single'])/100
+        return render_template("loading_single.html", cifar_index=cifar_index, activation_function=activation_function, noise_scale=noise_scale) 
 
     def get(self):
         return redirect(url_for('index'))
@@ -21,7 +19,11 @@ class SingleRandomCifarView(MethodView):
         random = Random()
         cifar_index = random.randint(0,49999)
         activation_function = secrets.choice(['relu','sigmoid','tanh'])
-        return render_template("loading_single.html", cifar_index=cifar_index, activation_function=activation_function) 
+        noise_scale = float(random.randint(0.0,1.0))
+        return render_template("loading_single.html", 
+                               cifar_index=cifar_index, 
+                               activation_function=activation_function,
+                               noise_scale=noise_scale) 
     
     def get(self):
         return redirect(url_for('index'))   
@@ -63,14 +65,16 @@ def register_socket_io_handlers(socketio, image_processing):
     def handle_single_process(data):
         cifar_index = data['cifar_index']
         activation_function = data['activation_function']
+        noise_scale = float(data.get('noise_scale', 0))
+        
         try:
-            result = image_processing.process_single_image(cifar_index, activation_function)
+            result = image_processing.process_single_image(cifar_index, activation_function, noise_scale)
             emit('complete',{'result':result})
         except Exception as err:
             emit('error', str(err))
+            
 class SingleCifarViewRegister():
     def register_routes(self, app, helper, socketio, image_processing):
-        # Register class-based views
         app.add_url_rule('/interactive/handle_data_single', 
                         view_func=SingleCifarView.as_view('handle_data_single'))
         
@@ -80,5 +84,4 @@ class SingleCifarViewRegister():
         app.add_url_rule('/interactive/result', 
                         view_func=ResultView.as_view('result', helper, image_processing))
         
-        # Register socket handlers
         register_socket_io_handlers(socketio, image_processing)

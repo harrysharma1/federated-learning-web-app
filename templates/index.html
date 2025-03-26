@@ -1,3 +1,20 @@
 {% extends 'base.html' %}
 {% block content %}
+<div class="hero bg-base-200 min-h-screen min-w-full">
+    <div class="hero-content text-center">
+      <div class="max-w-md">
+        <h1 class="text-5xl font-bold">What is Federated Learning?</h1>
+        <p class="py-6">
+            Federated Learning is a form of Machine Learning where training is localised on the client's device. The model is trained across these multiple devices, but the server only aggregates the model updates. This helps in preserving user privacy and data security.
+        </p>
+        <p class="">
+            This website will hopefully help showcase the pros and cons with both Federated Learning and it's surrounding Privacy Enhancing Technologies.
+        </p>
+        <div class="join join-vertical">
+            <a class="btn btn-primary join-item" href="/interactive">Get Started with an interactive demo</a>
+            <a class="btn btn-secondary join-item" href="/background">Read up on background information</a>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

@@ -38,6 +38,11 @@
                 <div class="stat-value text-lg">{{ "%.4f"|format(result.ssim) }}</div>
                 <div class="stat-desc">Closer to 1 is better</div>
             </div>
+            <div class="stat">
+                <div class="stat-title">Differential Privacy</div>
+                <div class="stat-value text-lg">{{ "%.2f"|format(result.noise) }}</div>
+                <div class="stat-desc">Higher produces more noise.</div>
+            </div>
         </div>
         
         <div class="mt-6 flex justify-center">

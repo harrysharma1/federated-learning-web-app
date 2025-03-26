@@ -39,7 +39,8 @@ class LeNet(nn.Module):
 class ImageProcessing():
     
     def __init__(self):
-        # Initialize CIFAR and transforms
+        """Initialise the class with accessible datasets and transforms
+        """
         self.dst = datasets.CIFAR100("~/.torch", download=True)
         self.tp = transforms.Compose([
             transforms.Resize(32),
@@ -50,8 +51,36 @@ class ImageProcessing():
         if torch.cuda.is_available():
             self.device = "cuda"
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+    
+    def add_dp_noise(self, gradients, scale):
+        """Adding Gaussian Noise to gradient
 
-    def process_single_image(self, idx, activation_function):
+        Args:
+            gradients (List[Tensor]): _description_
+            scale (float): _description_
+
+        Returns:
+            List[Tensor]: _description_
+        """
+        if scale <= 0 :
+            return gradients
+        
+        def add_noise(g):
+            std = g.std().item()
+            return g + torch.randn_like(g)* std * scale
+        
+        return list(map(add_noise, gradients))
+        
+    def process_single_image(self, idx, activation_function, noise_scale=0):
+        """Processing Single CIFAR100 images at a time (used for both Single and Multiple).
+
+        Args:
+            idx (int): CIFAR100 positional id for image
+            activation_function (str): Activation function from input e.g. sigmoid, relu, tanh.
+            noise_scale (float): Noise scale from 0 to 1. Defaults to 0.
+        Returns:
+            dict{...}: A dictionary of metrics to be accessed by the results pages
+        """
         helper = Helper()
         net = LeNet(activation_function).to(self.device)
         net.apply(helper.weights_init)
@@ -69,6 +98,7 @@ class ImageProcessing():
         y = criterion(out, gt_onehot_label)
         dy_dx = torch.autograd.grad(y, net.parameters())
         original_dy_dx = list((_.detach().clone() for _ in dy_dx))
+        original_dy_dx = self.add_dp_noise(original_dy_dx, noise_scale)
         
         # Generate dummy data and label
         dummy_data = torch.randn(gt_data.size()).to(self.device).requires_grad_(True)
@@ -101,10 +131,20 @@ class ImageProcessing():
             'mse': float(mse),
             'psnr': float(psnr),
             'ssim': float(ssim),
-            'image': helper.encode_image(reconstructed_data)
+            'image': helper.encode_image(reconstructed_data),
+            'noise': float(noise_scale)
         }
 
-    def process_custom_image(self, image, activation_function):
+    def process_custom_image(self, image, activation_function, noise_scale=0):
+        """Processing user upload images (tweaked for Custom upload).
+
+        Args:
+            image (ImageFile): Image file passed by upload function.
+            activation_function (str): Activation function from input e.g. sigmoid, relu, tanh. 
+
+        Returns:
+            dict{...}:  A dictionary of metrics to be accessed by the results pages 
+        """
         helper = Helper()
         net = LeNet(activation_function).to(self.device)
         net.apply(helper.weights_init)
@@ -126,6 +166,7 @@ class ImageProcessing():
         y = criterion(out, gt_onehot_label)
         dy_dx = torch.autograd.grad(y, net.parameters())
         original_dy_dx = list((_.detach().clone() for _ in dy_dx))
+        original_dy_dx = self.add_dp_noise(original_dy_dx, noise_scale)
         
         dummy_data = torch.randn(gt_data.size()).to(self.device).requires_grad_(True)
         dummy_label = torch.randn(gt_onehot_label.size()).to(self.device).requires_grad_(True)

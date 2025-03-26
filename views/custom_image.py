@@ -1,12 +1,10 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, url_for
 from flask.views import MethodView
 from flask_socketio import emit
 from io import BytesIO
 from PIL import Image
 from torchvision import transforms
 
-
-custom_image_blueprint = Blueprint('custom_image', __name__)
 
 class CustomImageView(MethodView):
     def __init__(self, helper, local_session):
@@ -18,8 +16,6 @@ class CustomImageView(MethodView):
     
     def post(self):
         try:                     
-            print("FILES:", list(request.files.keys()))
-            print("FORM:", list(request.form.keys()))
             if 'image_file' not in request.files:
                 return redirect(url_for('index'))
         
@@ -27,11 +23,11 @@ class CustomImageView(MethodView):
             if file.filename == '' or not self.allowed_files(file.filename):
                 flash('No selected file or invalid file type')
                 return redirect(url_for('index'))
-            print("local_session is defined:", hasattr(self, 'local_session'))
             image = Image.open(file.stream)
             
             original_encoded = self.helper.encode_image(image)
             activation_function = request.form.get('activation_function', 'sigmoid')
+            noise_scale = float(request.form['noise_scale_custom'])/100
             self.local_session.clear()
             self.local_session.add(
                 {
@@ -39,11 +35,11 @@ class CustomImageView(MethodView):
                     'original_size' : f"{image.size[0]}x{image.size[1]}"
                 }
             )
-            return render_template('loading_custom.html', activation_function=activation_function, local_session=self.local_session)
+            return render_template('loading_custom.html', activation_function=activation_function, local_session=self.local_session, noise_scale=noise_scale)
         except Exception as err:
             print(f"Error occurred uploading image: {err}")
             import traceback
-            traceback.print_exc()  # This will print the full stack trace
+            traceback.print_exc()
             return redirect(url_for('index'))
     
     def allowed_files(self, filename):
@@ -70,6 +66,7 @@ def register_socket_io_handlers(socketio, image_processing, local_session, helpe
     def handle_custom_process(data):
         try:
             original_image = helper.decode_image(data['original_image'])
+            noise_scale = float(data.get('noise_scale', 0))
             image = Image.open(BytesIO(original_image))
             
             if image.size != (32,32):
@@ -77,10 +74,11 @@ def register_socket_io_handlers(socketio, image_processing, local_session, helpe
                 
             transform = transforms.ToTensor()
             
-            result = image_processing.process_custom_image(image, data['activation_function'])
+            result = image_processing.process_custom_image(image, data['activation_function'], noise_scale)
             
             result['original_image'] = data['original_image']
             result['activation_function'] = data['activation_function']
+            result['noise'] = data['noise_scale']
             
             local_session.add(result)
             

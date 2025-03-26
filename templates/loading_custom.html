@@ -6,12 +6,13 @@
         <h2 class="text-xl font-bold text-center mb-8">
             Processing Custom Image
             {% if activation_function == 'relu' %}
-                with <em>ReLU</em> activation function...
+                with <em>ReLU</em> activation function
             {% elif activation_function == 'sigmoid' %}
-                with <em>Sigmoid</em> activation function...
+                with <em>Sigmoid</em> activation function
             {% elif activation_function == 'tanh' %}
-                with <em>Tanh</em> activation function...
+                with <em>Tanh</em> activation function
             {% endif %}
+            at Noise Level <em>{{ noise_scale }}</em>...
         </h2>
        
         <div class="flex flex-col items-center gap-2">
@@ -32,35 +33,12 @@
             const result = {{ local_session.get_results()|tojson }};
             socket.emit('start_custom_process', {
                 activation_function: '{{ activation_function }}',
-                original_image: result[0].original_image
+                original_image: result[0].original_image,
+                noise_scale: {{ noise_scale }}
             });
         });
 
-        socket.on('progress', function(data) {
-            progressBar.style.width = data.progress + '%';
-            progressText.textContent = Math.round(data.progress) + '%';
-            
-            if (data.current_result) {
-                metrics.innerHTML = `
-                    <div class="stats stats-vertical w-full text-sm">
-                        <div class="stat">
-                            <div class="stat-title">MSE</div>
-                            <div class="stat-value text-lg">${data.current_result.mse.toFixed(4)}</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-title">PSNR</div>
-                            <div class="stat-value text-lg">${data.current_result.psnr.toFixed(2)}</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-title">SSIM</div>
-                            <div class="stat-value text-lg">${data.current_result.ssim.toFixed(4)}</div>
-                        </div>
-                    </div>
-                `;
-            }
-        });
-
-        socket.on('image_converted', function(data) {
+         socket.on('image_converted', function(data) {
             currentImage.innerHTML = `
                 <img src="data:image/png;base64,${data.image}" 
                      class="w-32 h-32 object-contain"/>
