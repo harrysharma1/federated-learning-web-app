@@ -35,13 +35,27 @@ CustomImageViewRegister().register_routes(app=app, socketio=socketio, image_proc
 # Encode Decode Image
 @app.template_filter('b85decode')
 def b85decode_filter(b85_string):
-    """Convert base85 to bytes"""
+    """_summary_
+
+    Args:
+        b85_string (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     return base64.b85decode(b85_string)
 
 @app.template_filter('b64encode')
 def b64encode_filter(data):
-    """Convert bytes to base64"""
+    """_summary_
+
+    Args:
+        data (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     return base64.b64encode(data).decode()
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, use_reloader=True)
+    socketio.run(app)
