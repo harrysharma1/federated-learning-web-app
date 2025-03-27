@@ -15,7 +15,7 @@ class SingleCifarView(MethodView):
         """Return items of the POST request at URL '/interactive/handle_data_single'.
 
         Returns:
-           loading_multiple.html: Sends data as local_session to send through a WebSocket connection.
+           loading_single.html: Sends data as local_session to send through a WebSocket connection.
         """
         cifar_index = int(request.form['cifar_index'])
         activation_function = request.form['activation_function']
@@ -38,10 +38,10 @@ class SingleRandomCifarView(MethodView):
        This can be useful for defining a REST API. methods is automatically set based on the methods defined on the class.
     """
     def post(self):
-        """_summary_
+        """Return items of the POST request at URL '/interactive/handle_data_single_random'.
 
         Returns:
-            _type_: _description_
+            loading_single.html: Sends data as local_session to send through a WebSocket connection.
         """
         random = Random()
         cifar_index = random.randint(0,49999)
@@ -53,40 +53,41 @@ class SingleRandomCifarView(MethodView):
                                noise_scale=noise_scale) 
     
     def get(self):
-        """_summary_
+        """Return items of the GET request at URL '/interactive/handle_data_single_random'. 
 
         Returns:
-            _type_: _description_
+            index.html: In this case, it redirects to the home page of the web application.
         """
         return redirect(url_for('index'))   
 
 class ResultView(MethodView):
-    """_summary_
+    """Defining Class-Based Views for Result routing.
 
     Args:
-        MethodView (_type_): _description_
+        MethodView: Dispatches request methods to the corresponding instance methods. For example, if you implement a get method, it will be used to handle GET requests.
+        This can be useful for defining a REST API. methods is automatically set based on the methods defined on the class.
     """
     def __init__(self, helper, image_processing):
-        """_summary_
+        """Init function for ResultView class.
 
         Args:
-            helper (_type_): _description_
-            image_processing (_type_): _description_
+            helper (Helper): Instance of the Helper class, to provide utility functions.
+            image_processing (ImageProcessing): Instance of the ImageProcessing class, to process and train on CIFAR100 images.
         """
         super().__init__()
         self.image_processing = image_processing
         self.helper = helper
     
     def get(self):
-        """_summary_
-
+        """Return items of the GET request at URL '/interactive/result'.
+      
         Raises:
-            ValueError: _description_
-            ValueError: _description_
-            ValueError: _description_
+            ValueError: If no data is provided in the request arguments.
+            ValueError: If no CIFAR index is provided in the data.
+            ValueError: If no reconstructed image is present in the data.
 
         Returns:
-            _type_: _description_
+            result_sing.html: Retrieves data from WebSocket to display information of the simulated attack result.
         """
         try:
         # Get and validate data
@@ -114,18 +115,18 @@ class ResultView(MethodView):
             return redirect(url_for('index'))
         
 def register_socket_io_handlers(socketio, image_processing):
-    """_summary_
+    """Registering WebSocket handler for class based method.
 
     Args:
-        socketio (_type_): _description_
-        image_processing (_type_): _description_
+        socketio (SocketIO): Instance of SocketIO class, to register a WebSocket connection.
+        image_processing (ImageProcessing): Instance of ImageProcessing class, to train on 32x32 CIFAR100 gradient.
     """
     @socketio.on('start_single_process')
     def handle_single_process(data):
-        """_summary_
+        """Handling the WebSocket.
 
         Args:
-            data (_type_): _description_
+            data (Dict): Dictionary for passing data between WebSocket connections.
         """
         cifar_index = data['cifar_index']
         activation_function = data['activation_function']
@@ -138,16 +139,16 @@ def register_socket_io_handlers(socketio, image_processing):
             emit('error', str(err))
             
 class SingleCifarViewRegister():
-    """_summary_
+    """Registering all Class-based views in this file.
     """
     def register_routes(self, app, helper, socketio, image_processing):
-        """_summary_
+        """Registering the HTTP routes in regards to these Class-based views.
 
         Args:
-            app (_type_): _description_
-            helper (_type_): _description_
-            socketio (_type_): _description_
-            image_processing (_type_): _description_
+            app (Flask): Instance of the Flask class, to actually add routes to application.
+            helper (Helper): Instance of the Helper class, to provide utility functions.
+            socketio (SocketIO): Instance of the SocketIO class, to provide WebSocket handling.
+            image_processing (ImageProcessing): Instance of the ImageProcessing class, to process and train on CIFAR100 images.
         """
         app.add_url_rule('/interactive/handle_data_single', 
                         view_func=SingleCifarView.as_view('handle_data_single'))

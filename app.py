@@ -13,14 +13,12 @@ from views.index import IndexViewRegister
 from views.misc import MiscViewRegister
 from views.custom_image import CustomImageViewRegister
 
-
+# Create Necessary objects
 app = Flask(__name__)
 app.config.update(
     SECRET_KEY=secrets.token_hex(32),
 )
 socketio = SocketIO(app)
-
-
 local_session = LocalSession()
 image_processing = ImageProcessing()
 
@@ -35,25 +33,25 @@ CustomImageViewRegister().register_routes(app=app, socketio=socketio, image_proc
 # Encode Decode Image
 @app.template_filter('b85decode')
 def b85decode_filter(b85_string):
-    """_summary_
+    """Provide Base85 decode feature to be accessible to templates.
 
     Args:
-        b85_string (_type_): _description_
+        b85_string (str): Base85 encoded string.
 
     Returns:
-        _type_: _description_
+        bytes: The decoded bytes from the Base85 encoded string.
     """
     return base64.b85decode(b85_string)
 
 @app.template_filter('b64encode')
 def b64encode_filter(data):
-    """_summary_
+    """Provides Base64 encode feature accessible to templates.
 
     Args:
-        data (_type_): _description_
+        data (str): Normally passed string.
 
     Returns:
-        _type_: _description_
+        bytes: The Base64 encoded representation of the input string.
     """
     return base64.b64encode(data).decode()
 
