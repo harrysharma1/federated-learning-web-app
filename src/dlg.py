@@ -6,7 +6,18 @@ from PIL import Image
 from src.utils import Helper
 
 class LeNet(nn.Module):
+    """Model used in interactive Deep Leakage from gradients attack.<br>
+    Used from DLG: https://github.com/mit-han-lab/dlg/blob/master/models/vision.py 
+
+    Args:
+        nn (nn.Module): Inherit from Pytorch's Neural Network module.
+    """
     def __init__(self, activation_function='sigmoid'):
+        """Initialise LeNet class.
+
+        Args:
+            activation_function (str, optional): Setting the activation function of the Neural Network from the front-end. Defaults to 'sigmoid'.
+        """
         super(LeNet, self).__init__()
         if activation_function == 'relu':
             act = nn.ReLU
@@ -32,6 +43,14 @@ class LeNet(nn.Module):
         )
         
     def forward(self, x):
+        """Forward propogation through the Neural Network.
+
+        Args:
+            x (torch.Tensor): Input tensor going into Neural Network.
+
+        Returns:
+            torch.Tensor: Output tensor after passing through the network layers.
+        """
         out = self.body(x)
         out = out.view(out.size(0), -1)
         out = self.fc(out)
@@ -72,7 +91,8 @@ class ImageProcessing():
         return list(map(add_noise, gradients))
         
     def process_single_image(self, idx, activation_function, noise_scale=0):
-        """Processing Single CIFAR100 images at a time (used for both Single and Multiple).
+        """Processing Single CIFAR100 images at a time (used for both Single and Multiple).<br>
+        Attack taken and adapted from DLG: https://github.com/mit-han-lab/dlg/blob/master/main.py
 
         Args:
             idx (int): CIFAR100 positional id for image
@@ -136,8 +156,9 @@ class ImageProcessing():
         }
 
     def process_custom_image(self, image, activation_function, noise_scale=0):
-        """Processing user upload images (tweaked for Custom upload).
-
+        """Processing user upload images (tweaked for Custom upload).<br>
+        Attack taken and adapted from DLG: https://github.com/mit-han-lab/dlg/blob/master/main.py
+        
         Args:
             image (ImageFile): Image file passed by upload function.
             activation_function (str): Activation function from input e.g. sigmoid, relu, tanh. 
