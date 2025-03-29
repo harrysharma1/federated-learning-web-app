@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // File upload handling
     fileUpload.addEventListener('change', function(event) {
         const files = event.target.files;
-        
+        // Redundant check for file count but included for for future-proofing
         if (files.length > 0) {
             fileList.innerHTML = '<p class="font-semibold">Selected files:</p>';
             const fileCount = Math.min(files.length, 5); // Show max 5 files in the list

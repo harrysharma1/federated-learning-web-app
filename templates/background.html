@@ -1,28 +1,89 @@
 <!--Design Components taken and altered from: https://daisyui.com-->
 {% extends 'base.html' %}
 {% block content %}
-<div tabindex="0" class="collapse bg-base-100 border-base-300 border">
-    <div class="collapse-title font-semibold">Federated Learning</div>
-    <div class="collapse-content text-sm">
-      Click the "Sign Up" button in the top right corner and follow the registration process.
-    </div>
+<div class="collapse bg-base-100 border-base-300 border">
+  <input type="checkbox" />
+  <div class="collapse-title font-semibold">A brief timeline</div>
+  <div class="collapse-content text-sm">
+    <ul class="timeline timeline-vertical">
+      <li>
+        <div class="timeline-start timeline-box">
+          <p class="font-bold text-xl">1943</p> 
+          <p class="font-bold text-lg opacity-40">First Mention of the term Neural Network</p>
+          Warren McCulloch and Walter Pitts published a paper on, what is considered the first formal description of a
+          neural network. The paper proposed a model of artificial neurons that could perform logical operations. This layed the
+          groundwork for the development of artitificial neural networks, machine and deep learning <a href="/citations#citation_1">\(^{[1]}\)</a>.
+        </div>
+        <hr />
+      </li>
+      <li>
+        <hr />
+        <div class="timeline-end timeline-box">
+          <p class="font-bold text-lg">1958</p>
+          <p class="font-bold text-lg opacity-40">First Algorithmic implementation of Neural Network</p>
+          Frank Rosenblatt introduced the concept of the perceptron in this pivotal paper. This paper fundementally laid out the general format
+          of how Neural Networks would be structured and trained. It comprises of input, hidden and output layer neurons that can be trained <a href="/citations#citation_2">\(^{[2]}\)</a>.
+        </div>
+        <hr />
+      </li>
+      <li>
+        <hr />
+        <div class="timeline-start timeline-box">
+          <p class="font-bold text-lg">2006</p>
+          <p class="font-bold text-lg opacity-40">Differential Privacy</p>
+          The paper "Calibrating Noise to Sensitivity in Private Data Analysis" by Cynthia Dwork, Frank McSherry, Kobbi Nissim, and Adam Smith introduced the concept of differential privacy. 
+          This paper proposed a formal definition of privacy and a method for achieving it through the addition of noise to data. Though it was initially a paper focusing on database security, 
+          it become a cornerstone of modern privacy-preserving machine learning techniques<a href="/citations#citation_3">\(^{[3]}\)</a>.    
+        </div>
+        <hr />
+      </li>
+      <li>
+        <hr />
+        <div class="timeline-end timeline-box">
+          <p class="font-bold text-lg">2016</p>
+          <p class="font-bold text-lg opacity-40">Introduction of Secure Aggregation Protocol</p>
+          This paper introduced a mathematically sound cryptographic protocol for securing user data.
+          Originally it was designed for general use in distributed systems, but it has been adapted for use in federated learning <a href="/citations#citation_4">\(^{[4]}\)</a>.
+        </div>
+        <hr />
+      </li>
+      <li>
+        <hr />
+        <div class="timeline-start timeline-box">
+          <p class="font-bold text-lg">2017</p>
+          <p class="font-bold text-lg opacity-40">Release of Federated Learning</p>
+          
+        </div>
+      </li>
+    </ul>
   </div>
-<div tabindex="0" class="collapse bg-base-100 border-base-300 border">
-    <div class="collapse-title font-semibold">Secure Aggregation Protocol</div>
-    <div class="collapse-content text-sm">
-      Click the "Sign Up" button in the top right corner and follow the registration process.
-    </div>
 </div>
-<div tabindex="0" class="collapse bg-base-100 border-base-300 border">
-    <div class="collapse-title font-semibold">Differential Privacy</div>
-    <div class="collapse-content text-sm">
-      Click the "Sign Up" button in the top right corner and follow the registration process.
-    </div>
+<div class="collapse bg-base-100 border-base-300 border">
+  <input type="checkbox" />
+  <div class="collapse-title font-semibold">Federated Learning</div>
+  <div class="collapse-content text-sm">
+    Click the "Sign Up" button in the top right corner and follow the registration process.
+  </div>
 </div>
-<div tabindex="0" class="collapse bg-base-100 border-base-300 border">
-    <div class="collapse-title font-semibold">Deep Leakage from Gradients</div>
-    <div class="collapse-content text-sm">
-      Click the "Sign Up" button in the top right corner and follow the registration process.
-    </div>
+<div class="collapse bg-base-100 border-base-300 border">
+  <input type="checkbox" />
+  <div class="collapse-title font-semibold">Differential Privacy</div>
+  <div class="collapse-content text-sm">
+    Click the "Sign Up" button in the top right corner and follow the registration process.
+  </div>
+</div>
+<div class="collapse bg-base-100 border-base-300 border">
+  <input type="checkbox" />
+  <div class="collapse-title font-semibold">Secure Aggregation Protocol</div>
+  <div class="collapse-content text-sm">
+    Click the "Sign Up" button in the top right corner and follow the registration process.
+  </div>
+</div>
+<div class="collapse bg-base-100 border-base-300 border">
+  <input type="checkbox" />
+  <div class="collapse-title font-semibold">Deep Leakage from Gradients</div>
+  <div class="collapse-content text-sm">
+    Click the "Sign Up" button in the top right corner and follow the registration process.
+  </div>
 </div>
 {% endblock %}
