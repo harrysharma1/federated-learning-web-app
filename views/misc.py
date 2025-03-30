@@ -1,4 +1,4 @@
-from flask import redirect, render_template, request, url_for
+from flask import render_template
 from flask.views import MethodView
 
 class InteractiveView(MethodView):

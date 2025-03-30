@@ -52,7 +52,31 @@
         <div class="timeline-start timeline-box">
           <p class="font-bold text-lg">2017</p>
           <p class="font-bold text-lg opacity-40">Release of Federated Learning</p>
-          
+          Google introduced this as a new paradigm for training machine learning models on decentralized data. This put the training onto the distributed client devices,
+          rather than a centralised server running the training. This was a major step forward in the field of privacy-preserving machine learning.
+        </div>
+        <hr />
+      </li>
+      <li>
+        <hr />
+        <div class="timeline-end timeline-box">
+          <p class="font-bold text-lg">2018</p>
+          <p class="font-bold text-lg opacity-40">Cambridge Analytica Scandal</p>
+          This scandal highlighted the importance of data privacy and security in the digital age. 
+          It raised awareness about the potential risks of data misuse and the need for better privacy-preserving techniques in machine learning.
+          Though user concern focused on general misuse of data, it would become a more relevant topic as the field of machine learning became more
+          prevelant in the public eye <a href="/citations#citation_5">\(^{[5]}\)</a>.
+        </div>
+        <hr />
+      </li>
+      <li>
+        <hr />
+        <div class="timeline-start timeline-box">
+          <p class="font-bold text-lg">2019</p>
+          <p class="font-bold text-lg opacity-40">Deep Leakage from Gradients showcased and developed by MIT's Han Lab</p>
+          This paper and the subsequent repository, introduced an algorithm that could extract meaningfurl information from the gradients
+          of the neural network. This was a major step back for the field of privacy-preserving machine learning, as it showcased the potential for
+          information leakage even in federated learning systems. The paper proposed several mitigation strategies, but it highlighted the need for more robust privacy-preserving techniques <a href="/citations#citation_6">\(^{[6]}\)</a><a href="/citations#citation_7">\(^{[7]}\)</a>.
         </div>
       </li>
     </ul>
@@ -62,28 +86,154 @@
   <input type="checkbox" />
   <div class="collapse-title font-semibold">Federated Learning</div>
   <div class="collapse-content text-sm">
-    Click the "Sign Up" button in the top right corner and follow the registration process.
+    Federated Learning is a form of Machine Learning where you have a multi-user locally trained model. The model is trained in the following:
+    <pre class="mermaid">
+      ---
+      config:
+        layout: elk
+        theme: mc
+      ---
+      flowchart LR
+          client_1(("fa:fa-person")) -- "Delta 1 (gradient from trained data)." --> server_agg[("Central model, usually stoered in a cloud service.")]
+          client_w(("fa:fa-person")) -- "Delta 2 (gradient from trained data)." --> server_agg
+          server_agg ----> server_send[["Average the gradients e.g. avg(delta 1, delta 2)."]]
+          server_send -- "Sharing averaged gradient." ---> client_1
+          server_send -- "Sharing averaged gradient." --> client_w
+          n1[" "] -- "Updating shared model with new private data." --> client_w
+          n2[" "] -- "Updating shared model with new private data." --> client_1
+          n1@{ shape: anchor}
+          n2@{ shape: anchor}
+           client_1:::Ash
+           server_agg:::Sky
+           client_w:::Ash
+           server_send:::Rose
+          classDef Sky stroke-width:1px, stroke-dasharray:none, stroke:#374D7C, fill:#E2EBFF, color:#374D7C
+          classDef Rose stroke-width:1px, stroke-dasharray:none, stroke:#FF5978, fill:#FFDFE5, color:#8E2236
+          classDef Ash stroke-width:1px, stroke-dasharray:none, stroke:#999999, fill:#EEEEEE, color:#000000
+          style client_1 stroke-width:2px,stroke-dasharray: 0,stroke:#000000
+          style server_agg stroke:#000000
+          style client_w stroke:#000000,stroke-width:2px,stroke-dasharray: 0
+          style server_send stroke:#000000      
+    </pre>
+    Though this provides some measures for retaining user privacy, it is not without its flaws. This form of learning is susceptible to Deep Leakage from Gradients, 
+    where the gradients of the model can be used to extract information about the training <a href="/citations#citation_6">\(^{[6]}\)</a>.
   </div>
 </div>
 <div class="collapse bg-base-100 border-base-300 border">
   <input type="checkbox" />
   <div class="collapse-title font-semibold">Differential Privacy</div>
   <div class="collapse-content text-sm">
-    Click the "Sign Up" button in the top right corner and follow the registration process.
+    <p>Differential Privacy is a mechanism for adding noise to data to protect user privacy. This calibration can  can be done in accordance with the sensitivity of th data.
+    Depending on the configuration, it can still allow for some amount of analysis. Though the problem occurs when too much noise is added. This can lead to a quantitative
+    impact on the quality of the model that trains on it<a href="/citations#citation_3">\(^{[3]}\)</a>.</p>
+    <p>The noise can either be added as:</p>
+    <ul>
+      <li style="margin-left: 25px;">1. Gaussian Noise</li>
+      <li style="margin-left: 25px;">2. Laplacian Noise</li>
+    </ul>
+    <p>There are many more distributions, but these are the main ones when working with Differential Privacy.</p>
+    <p>It can also be added on either the Client or Server side, or both.</p>
+    <h1>
+      <span class="text-md font-bold">Server Side</span>
+    </h1>
+    <pre class="mermaid">
+      ---
+      config:
+        theme: redux
+        layout: dagre
+      ---
+      flowchart TD
+       subgraph trusted_server["Trusted Server"]
+              dp_mech["Laplace/Gaussian Mechanism"]
+              trusted_db["fa:fa-database"]
+        end
+          trusted_db o-.-o dp_mech
+          trusted_server -- Updates the global model --> central_model["fa:fa-brain"]
+          mobile["fa:fa-mobile-screen-button"] <-.-> trusted_server
+          laptop["fa:fa-laptop"] <-.-> trusted_server
+          ipad["fa:fa-tablet-screen-button"] <-.-> trusted_server
+      
+    </pre>
+    <h1>
+      <span class="text-md font-bold">Client Side</span>
+    </h1>
+    <pre class="mermaid">
+      ---
+      config:
+        theme: redux
+        layout: elk
+      ---
+      flowchart TD
+       subgraph untrusted_server["Untrusted Server"]
+              trusted_db["fa:fa-database"]
+        end
+       subgraph laplace["Laplace/Gaussian Mechanism"]
+              mobile["fa:fa-mobile-screen-button"]
+              laptop["fa:fa-laptop"]
+              ipad["fa:fa-tablet-screen-button"]
+        end
+          untrusted_server -- Updates the global model --> central_model["fa:fa-brain"]
+          mobile <-.-> untrusted_server
+          laptop <-.-> untrusted_server
+          ipad <-.-> untrusted_server
+      
+    </pre>
+    </p>
   </div>
 </div>
 <div class="collapse bg-base-100 border-base-300 border">
   <input type="checkbox" />
   <div class="collapse-title font-semibold">Secure Aggregation Protocol</div>
   <div class="collapse-content text-sm">
-    Click the "Sign Up" button in the top right corner and follow the registration process.
+    <p>This protocol consists of 5 key steps<a href="/citations#citation_4">\(^{[4]}\)</a>: </p>
+    <ul>
+      <li style="margin-left: 25px;">0. <b>Masking data with one time pad</b> using pairs of users (under the assumption that they all participate).</li>
+      <li style="margin-left: 25px;">1. <b>Dropped user recovery using secret sharing</b> as we know, realistically not all clients will be or remain connected. This uses the server  and RSA-2048 encryption to encrypt a share of the data. This allows encryption and decryption of data but requires more than half of the players to be active.</li>
+      <li style="margin-left: 25px;">2. <b>Double-masking to thwart a malicous server</b> is introduced to accomodate for malicous servers. The users, in the secret sharing step now include another mask. Now the server can only request one or the other, calculate the aggregate values.</li>
+      <li style="margin-left: 25px;">3. <b>Exchanging secrets efficiently</b> as this phase is reduced to doing 1. once rather than constantly retransmitting secrets.</li>
+      <li style="margin-left: 25px;">4. <b>Minimising Trust in Practice</b>. This refers to the mobile architecture having to implictly adhere to the server key agreement as there is no way to have pairwise authentication. This is not inherently a limitation of the algorithm, just of infrastructure.</li>
+    </ul>
   </div>
 </div>
 <div class="collapse bg-base-100 border-base-300 border">
   <input type="checkbox" />
   <div class="collapse-title font-semibold">Deep Leakage from Gradients</div>
   <div class="collapse-content text-sm">
-    Click the "Sign Up" button in the top right corner and follow the registration process.
+    This algorithm is used to extract training data from gradients. It highlights the flaw of inherently trusting this form of learning to work truly secure user data:
+    <pre class="mermaid">
+      ---
+config:
+  theme: redux
+  layout: fixed
+---
+flowchart LR        
+ subgraph s1["Normal Participant"]
+    direction LR
+        differential_model("F(x,W)")
+        larry["Training data"]
+            larry --> differential_model
+    larry@{ img: "https://static.wikia.nocookie.net/idkcatmemes/images/c/cc/Larry.png", h: 100, w: 100, pos: "b"}
+    differential_model --> pred("Pred") --> loss("Loss")
+    loss -->weight["∇W"]--> differential_model
+    out["[0,1,0]"]
+    out --> loss
+  end
+ subgraph s2["Malicous Actor"]
+    direction LR
+        differential_model_attacker("F(x',W)")
+        init["Random initialisation"]
+        init --> differential_model_attacker
+    init@{ img: "https://thumbs.dreamstime.com/b/seamless-random-squares-mosaic-tiles-pixelated-pixels-colorful-vibrant-vivid-background-pattern-blocks-repeatable-checker-159340021.jpg", h: 100, w: 100, pos: "b"}
+    differential_model_attacker --> pred_attacker("Pred'") --> loss_attacker("Loss' ")
+    loss_attacker -->weight_attacker["∇W'"]--> differential_model_attacker
+    out_attacker["[0.2,0.7,0.1]"]
+    out_attacker --> loss_attacker
+    diff["𝔻=||∇W'-∇W||²"]--∂𝔻/∂Y-->loss_attacker
+    diff --∂𝔻/∂X-->init
+  end
+  weight_attacker --Try to match--> weight
+
+    </pre>
   </div>
 </div>
 {% endblock %}

@@ -3,7 +3,6 @@ from flask.views import MethodView
 from flask_socketio import emit
 from io import BytesIO
 from PIL import Image
-from torchvision import transforms
 
 
 class CustomImageView(MethodView):
