@@ -1,102 +1,109 @@
 <!--Design Components taken and altered from: https://daisyui.com-->
 {% extends 'base.html' %}
 {% block content %}
-<div class="flex flex-col items-center justify-center min-h-screen">
-    <div class="w-96 p-6 bg-base-100 shadow-xl rounded-lg">
-        <h2 class="text-xl font-bold text-center mb-8">
-            Training with <em>{{ activation_function|title }}</em> activation function at Noise Level <em>{{ noise_scale }}</em>...
-        </h2>
-        
-        
-        <div class="mb-4">
-            <div class="flex justify-between mb-1">
-                <span class="text-sm font-medium">Progress</span>
-                <span class="text-sm font-medium" id="progress-text">0%</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2.5">
-                <div class="bg-blue-600 h-2.5 rounded-full" id="progress-bar" style="width: 0%"></div>
-            </div>
+        <!--Progress bar taken from DaisyUI: https://daisyui.com/components/progress/#progress-->
+        <!--Showcasing intermediate values for multiple range CIFAR.-->
+        <div class="flex flex-col items-center justify-center min-h-screen">
+                <div class="w-96 p-6 bg-base-100 shadow-xl rounded-lg">
+                        <h2 class="text-xl font-bold text-center mb-8">
+                                Training with <em>{{ activation_function|title }}</em> activation function at Noise Level <em>{{ noise_scale }}</em>...
+                        </h2>
+
+                        <div class="mb-4">
+                                <div class="flex justify-between mb-1">
+                                        <span class="text-sm font-medium">Progress</span>
+                                        <span class="text-sm font-medium" id="progress-text">0%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div class="bg-blue-600 h-2.5 rounded-full" id="progress-bar" style="width: 0%"></div>
+                                </div>
+                        </div>
+
+                        <div id="current-image" class="mb-4 flex justify-center"></div>
+                        <div id="accent-line"></div>
+                        <div id="metrics" class="text-sm space-y-1"></div>
+                </div>
         </div>
 
-        <div id="current-image" class="mb-4 flex justify-center"></div>
-        <div id="accent-line"></div>
-        <div id="metrics" class="text-sm space-y-1"></div>
-    </div>
-</div>
+        <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                        // Initialise socket connection and retrieve the elements from the DOM.
+                        const socket = io();
+                        const progressBar = document.getElementById('progress-bar');
+                        const progressText = document.getElementById('progress-text');
+                        const currentImage = document.getElementById('current-image');
+                        const metrics = document.getElementById('metrics');
+                        const accentLine = document.getElementById('accent-line');
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const socket = io();
-        const progressBar = document.getElementById('progress-bar');
-        const progressText = document.getElementById('progress-text');
-        const currentImage = document.getElementById('current-image');
-        const metrics = document.getElementById('metrics');
-        const accentLine = document.getElementById('accent-line');
+                        // Send the following to the server once a WebSocket connection has been established.
+                        socket.on('connect', () => {
+                                console.log('Connected to server');
+                                socket.emit('start_processing', {
+                                start_index: {{ start_cifar_index }},
+                                end_index: {{ end_cifar_index }},
+                                activation_function: '{{ activation_function }}',
+                                noise_scale: {{ noise_scale }}
+                                });
+                        });
+                        
+                        // This shows the intermediate results for each CIFAR image within the range.
+                        socket.on('progress', function(data) {
+                                console.log('Progress update:', data.progress);
+                                progressBar.style.width = data.progress + '%';
+                                progressText.textContent = Math.round(data.progress) + '%';
 
-        socket.on('connect', () => {
-            console.log('Connected to server');
-            socket.emit('start_processing', {
-                start_index: {{ start_cifar_index }},
-                end_index: {{ end_cifar_index }},
-                activation_function: '{{ activation_function }}',
-                noise_scale: {{ noise_scale }}
-            });
-        });
+                                if (data.current_result) {
 
-        socket.on('progress', function(data) {
-            console.log('Progress update:', data.progress);
-            progressBar.style.width = data.progress + '%';
-            progressText.textContent = Math.round(data.progress) + '%';
-            
-            if (data.current_result) {
-     
-                socket.emit('convert_image', { 
-                    image: data.current_result.image 
+                                        socket.emit('convert_image', { 
+                                                image: data.current_result.image 
+                                        });
+
+                                        metrics.innerHTML = `
+                                                <div class="font-semibold">Processing CIFAR Image #${data.curr_id}</div>
+                                                <div>MSE: ${data.current_result.mse.toFixed(2)}</div>
+                                                <div>PSNR: ${data.current_result.psnr.toFixed(2)}</div>
+                                                <div>SSIM: ${data.current_result.ssim.toFixed(2)}</div>
+                                                `;
+                                }
+                        });
+
+                        // Converting from Base85 to Base64.
+                        socket.on('image_converted', function(data) {
+                                currentImage.innerHTML = `
+                                <img src="data:image/png;base64,${data.image}" 
+                                class="w-32 h-32 object-contain"/>
+                                `;
+                                accentLine.innerHTML = `
+                                <div class="divider divider-accent"></div>
+                                `;
+                        });
+
+                        // Check if process is complete and redirect to results page with the new information. Wrap in try/catch to handle any random errors, specifically if the URL is too high.
+                        // This was fixed with extra input validation but still worth keeping.
+                        socket.on('complete', function(data) {
+                                if (data.results) {
+                                        try {
+                                        const resultsStr = encodeURIComponent(JSON.stringify(data.results));
+                                        console.log('Processing complete, redirecting with results...');
+                                        window.location.href = `{{ url_for('chart') }}`;
+                                        } catch (error) {
+                                        console.error('Error processing results:', error);
+                                        alert('Error processing results: ' + error.message);
+                                        }
+                                } else {
+                                        console.error('No results received');
+                                        alert('No results received from server');
+                                        }
+                                });
+
+                                socket.on('error', function(error) {
+                                        console.error('Error:', error);
+                                        alert('An error occurred: ' + error);
+                                });
+
+                                socket.on('disconnect', () => {
+                                console.log('Disconnected from server');
+                        });
                 });
-
-                metrics.innerHTML = `
-                    <div class="font-semibold">Processing CIFAR Image #${data.curr_id}</div>
-                    <div>MSE: ${data.current_result.mse.toFixed(2)}</div>
-                    <div>PSNR: ${data.current_result.psnr.toFixed(2)}</div>
-                    <div>SSIM: ${data.current_result.ssim.toFixed(2)}</div>
-                `;
-            }
-        });
-
-        socket.on('image_converted', function(data) {
-            currentImage.innerHTML = `
-                <img src="data:image/png;base64,${data.image}" 
-                     class="w-32 h-32 object-contain"/>
-            `;
-            accentLine.innerHTML = `
-                <div class="divider divider-accent"></div>
-            `;
-        });
-
-        socket.on('complete', function(data) {
-            if (data.results) {
-                try {
-                    const resultsStr = encodeURIComponent(JSON.stringify(data.results));
-                    console.log('Processing complete, redirecting with results...');
-                    window.location.href = `{{ url_for('chart') }}`;
-                } catch (error) {
-                    console.error('Error processing results:', error);
-                    alert('Error processing results: ' + error.message);
-                }
-            } else {
-                console.error('No results received');
-                alert('No results received from server');
-            }
-        });
-
-        socket.on('error', function(error) {
-            console.error('Error:', error);
-            alert('An error occurred: ' + error);
-        });
-
-        socket.on('disconnect', () => {
-            console.log('Disconnected from server');
-        });
-    });
-</script>
+        </script>
 {% endblock %}

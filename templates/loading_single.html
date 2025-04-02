@@ -1,50 +1,55 @@
 <!--Design Components taken and altered from: https://daisyui.com-->
 {% extends 'base.html' %}
 {% block content %}
-<div class="flex flex-col items-center justify-center min-h-screen gap-4">
-    <div class="card w-96 bg-base-100 shadow-xl p-8">
-        <h2 class="text-xl font-bold text-center mb-8">
-            Training on CIFAR Image Index  <em>{{ cifar_index }}</em>
-            {% if  activation_function == 'relu' %}
-                with <em>ReLU</em> activation function
-            {% elif activation_function == 'sigmoid' %}
-                with <em>Sigmoid</em> activation function
-            {% elif activation_function == 'tanh' %}
-                with <em>Tanh</em> activation function
-            {% endif %}
-            at Noise Level <em>{{ noise_scale }}</em>...
-        </h2>
-       
-        <div class="flex flex-col items-center gap-2">
-            <span class="loading loading-bars loading-xl"></span>
+        <!--Card component is from DaisyUI: https://daisyui.com/components/card/#card-sizes-->
+        <div class="flex flex-col items-center justify-center min-h-screen gap-4">
+                <div class="card w-96 bg-base-100 shadow-xl p-8">
+                        <h2 class="text-xl font-bold text-center mb-8">
+                                Training on CIFAR Image Index  <em>{{ cifar_index }}</em>
+                                {% if  activation_function == 'relu' %}
+                                with <em>ReLU</em> activation function
+                                {% elif activation_function == 'sigmoid' %}
+                                with <em>Sigmoid</em> activation function
+                                {% elif activation_function == 'tanh' %}
+                                with <em>Tanh</em> activation function
+                                {% endif %}
+                                at Noise Level <em>{{ noise_scale }}</em>...
+                        </h2>
+                        <!--Loading component is from DaisyUI: https://daisyui.com/components/loading/#loading-bars-->
+                        <div class="flex flex-col items-center gap-2">
+                                <span class="loading loading-bars loading-xl"></span>
+                        </div>
+                </div>
         </div>
-    </div>
-</div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const socket = io();
+        <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                        // Initialise the socket.io object. 
+                        const socket = io();
+                        
+                        // Make the WebSocket connection to the server side and send the following data to be processed.
+                        socket.on('connect', () => {
+                                socket.emit('start_single_process', {
+                                        cifar_index: {{ cifar_index }},
+                                        activation_function: '{{ activation_function }}',
+                                        noise_scale: {{ noise_scale }}
+                                });
+                        });
+                        
+                        // Once done redirect to show page by appending to the URL. 
+                        //Not the best but initial solution worked for single images hence kept rather than tweaking it to work in the way the multiple CIFAR one was.
+                        socket.on('complete', function(data) {
+                                let result = data.result;
+                                console.log('Result:', result);
+                                result.cifar_index = {{ cifar_index }};
+                                window.location.href = "{{ url_for('result') }}?data=" + 
+                                encodeURIComponent(JSON.stringify(data.result));
+                        });
 
-        socket.on('connect', () => {
-            socket.emit('start_single_process', {
-                cifar_index: {{ cifar_index }},
-                activation_function: '{{ activation_function }}',
-                noise_scale: {{ noise_scale }}
-            });
-        });
-
-        socket.on('complete', function(data) {
-            let result = data.result;
-            console.log('Result:', result);
-            result.cifar_index = {{ cifar_index }};
-            window.location.href = "{{ url_for('result') }}?data=" + 
-                                 encodeURIComponent(JSON.stringify(data.result));
-        });
-
-        socket.on('error', function(error) {
-            console.error('Error:', error);
-            alert('An error occurred: ' + error);
-        });
-    });
-</script>
+                        socket.on('error', function(error) {
+                                console.error('Error:', error);
+                                alert('An error occurred: ' + error);
+                        });
+                });
+        </script>
 {% endblock %}

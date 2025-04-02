@@ -1,40 +1,55 @@
 <!--Design Components taken and altered from: https://daisyui.com-->
 {% extends 'base.html' %}
 {% block content %}
-<h1 class="text-3xl font-bold text-center mb-8">Citations</h1>
-<p class="text-center mb-4">This page contains the citations for the research papers and articles referenced on this page.</p>
-<p id="citation_1">
-[1]
-W. S. McCulloch and W. Pitts, “A Logical Calculus of the Ideas Immanent in Nervous Activity,” The Bulletin of Mathematical Biophysics, vol. 5, no. 4, pp. 115–133, 1943, doi: <a href="https://doi.org/10.1007/bf02478259" class="hover:underline" target = "_blank">h0.1007/bf02478259.</a>
-</p>
-<br class="py-5">
-<p id ="citation_2">
-[2]
-F. Rosenblatt, “The perceptron: A probabilistic model for information storage and organization in the brain.,” Psychological Review, vol. 65, no. 6, pp. 386–408, 1958, doi: <a href="https://doi.org/10.1037/h0042519" class="hover:underline" target = "_blank">h0.1037/h0042519.</a>
-</p>
-<br class="py-5">
-<p id="citation_3">
-[3]
-C. Dwork, F. McSherry, K. Nissim, and A. Smith, “Calibrating Noise to Sensitivity in Private Data Analysis,” in Theory of Cryptography, 2006, pp. 265–284.
-</p>
-<br class="py-5">
-<p id="citation_4">
-[4]
-K. A. Bonawitz et al., “Practical Secure Aggregation for Federated Learning on User-Held Data,” 2016. [Online]. Available: <a href="https://arxiv.org/abs/1611.04482" class="hover:underline" target = "_blank">https://arxiv.org/abs/1611.04482</a>
-</p>
-<br class="py-5">
-<p id="citation_5">
-[5]
-K. Harbath and C. Fernekes, History of the Cambridge Analytica Controversy. 2023. [Online]. Available: <a href="https://bipartisanpolicy.org/blog/cambridge-analytica-controversy/" class="hover:underline" target = "_blank">https://bipartisanpolicy.org/blog/cambridge-analytica-controversy/</a>
-</p>
-<br class="py-5">
-<p id="citation_6">
-[6]
-L. Zhu, Z. Liu, and S. Han, “Deep Leakage from Gradients,” 2019. [Online]. Available: <a href="https://arxiv.org/pdf/1906.08935" class="hover:underline" target = "_blank">https://arxiv.org/pdf/1906.08935</a>
-</p>
-<br class="py-5">
-<p id="citation_7">
-[7]
-Z. Ligeng and L. L. Dong, dlg. 2019. [Online]. Available: <a href="https://github.com/mit-han-lab/dlg" class="hover:underline" target = "_blank">https://github.com/mit-han-lab/dlg<a/>
-</p>
+        <!--Manual citations with id's so url redirects such as /citations#citation_1 would scroll to the corresponding div on this page. -->
+        <h1 class="text-3xl font-bold text-center mb-8">Citations</h1>
+
+        <p class="text-center mb-4">This page contains the citations for the research papers and articles referenced on this page.</p>
+        
+        <p id="citation_1">
+                [1]
+                W. S. McCulloch and W. Pitts, “A Logical Calculus of the Ideas Immanent in Nervous Activity,” The Bulletin of Mathematical Biophysics, vol. 5, no. 4, pp. 115–133, 1943, doi: <a href="https://doi.org/10.1007/bf02478259" class="hover:underline" target = "_blank">h0.1007/bf02478259.</a>
+        </p>
+        
+        <br class="py-5">
+        
+        <p id ="citation_2">
+                [2]
+                F. Rosenblatt, “The perceptron: A probabilistic model for information storage and organization in the brain.,” Psychological Review, vol. 65, no. 6, pp. 386–408, 1958, doi: <a href="https://doi.org/10.1037/h0042519" class="hover:underline" target = "_blank">h0.1037/h0042519.</a>
+        </p>
+        
+        <br class="py-5">
+        
+        <p id="citation_3">
+                [3]
+                C. Dwork, F. McSherry, K. Nissim, and A. Smith, “Calibrating Noise to Sensitivity in Private Data Analysis,” in Theory of Cryptography, 2006, pp. 265–284.
+        </p>
+        
+        <br class="py-5">
+        
+        <p id="citation_4">
+                [4]
+                K. A. Bonawitz et al., “Practical Secure Aggregation for Federated Learning on User-Held Data,” 2016. [Online]. Available: <a href="https://arxiv.org/abs/1611.04482" class="hover:underline" target = "_blank">https://arxiv.org/abs/1611.04482</a>
+        </p>
+        
+        <br class="py-5">
+        
+        <p id="citation_5">
+                [5]
+                K. Harbath and C. Fernekes, History of the Cambridge Analytica Controversy. 2023. [Online]. Available: <a href="https://bipartisanpolicy.org/blog/cambridge-analytica-controversy/" class="hover:underline" target = "_blank">https://bipartisanpolicy.org/blog/cambridge-analytica-controversy/</a>
+        </p>
+        
+        <br class="py-5">
+        
+        <p id="citation_6">
+                [6]
+                L. Zhu, Z. Liu, and S. Han, “Deep Leakage from Gradients,” 2019. [Online]. Available: <a href="https://arxiv.org/pdf/1906.08935" class="hover:underline" target = "_blank">https://arxiv.org/pdf/1906.08935</a>
+        </p>
+        
+        <br class="py-5">
+        
+        <p id="citation_7">
+                [7]
+                Z. Ligeng and L. L. Dong, dlg. 2019. [Online]. Available: <a href="https://github.com/mit-han-lab/dlg" class="hover:underline" target = "_blank">https://github.com/mit-han-lab/dlg<a/>
+        </p>
 {% endblock %}

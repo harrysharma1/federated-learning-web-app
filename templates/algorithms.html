@@ -1,83 +1,89 @@
 <!--Design Components taken and altered from: https://daisyui.com-->
+<!--Design Components also taken and altered from: https://tailwindcss.com-->
 {% extends 'base.html' %}
 {% block content %}
+    <!--Normal boxed section taken from: https://daisyui.com/components/collapse/#collapse-with-focus-->
     <h1 class="text-5xl font-bold text-center">Algorithms</h1>
     <p class="py-5">These are the algorithms that will be used as metrics for this attack. To do an interactive run go <a href="/interactive" class="hover:underline">here.</a></p>
-    <h2 class="text-3xl font-bold text-center">Image Quality Metrics</h2>
+    <!--This section covers the image comparison metrics. -->
+    <h2 class="text-3xl font-bold text-center">Image Comparison Metrics</h2>
+    <!--Brief description of what SSIM is alonside the Python based pseudocode.--> 
     <div tabindex="0" class="collapse bg-base-100 border-base-300 border">
-    <div class="collapse-title font-semibold">MSE (Mean Squared Error)</div>
-    <div class="collapse-content text-sm">
-        Mean Squared Error is the average of the squared differences between original and expected values. This helps measure the quality of the prediction. The formula for MSE is as follows:
-        \[MSE=\frac{1}{n}\sum_{i=1}^{n}(Y_{i}-\hat{Y}_i)^{2}\]
-        <ul>
+        <div class="collapse-title font-semibold">MSE (Mean Squared Error)</div>
+        <div class="collapse-content text-sm">
+            Mean Squared Error is the average of the squared differences between original and expected values. This helps measure the quality of the prediction. The formula for MSE is as follows:
+            \[MSE=\frac{1}{n}\sum_{i=1}^{n}(Y_{i}-\hat{Y}_i)^{2}\]
+            <ul>
             <li>\(Y_i\) is the original value at \(i\)</li>
             <li>\(\hat{Y}_i\) is the estimate value at \(i\)</li>
-        </ul>
-        <pre><code class="python">def mse(A,B) -> float:
-  """
-  Mean Squared Error between two images. In this case A and B are 32x32 images.
-  """
-  if len(A) != 32 or len(B) != 32:
+            </ul>
+            <pre><code class="python">def mse(A,B) -> float:
+    """
+    Mean Squared Error between two images. In this case A and B are 32x32 images.
+    """
+    if len(A) != 32 or len(B) != 32:
     raise ValueError("Images are not 32x32")
-  sum = 0
-  for i in range (32):
-  for j in range(32):
-  sum += (A[i][j] - B[i][j])**2
-  return sum/(32*32)
-  A = [[0]*32]*32
-  B = [[0]*32]*32
-  print(mse(A,B))
-  </code></pre> 
+    sum = 0
+    for i in range (32):
+    for j in range(32):
+    sum += (A[i][j] - B[i][j])**2
+    return sum/(32*32)
+    A = [[0]*32]*32
+    B = [[0]*32]*32
+    print(mse(A,B))
+            </code></pre> 
+        </div>
     </div>
-  </div>
-  <div tabindex="0" class="collapse bg-base-100 border-base-300 border">
-    <div class="collapse-title font-semibold">PSNR (Peak-Signal-to-Noise-Ratio)</div>
-    <div class="collapse-content text-sm">
-        Peak Signal-to-Noise Ratio is a metric that is used to measure the distortion of the estimation compared to the truth value. It uses MSE as part of this calculation. The formula for PSNR is as follows:
-        \[PSNR = 10\cdot\log_{10}(\frac{MAX_{1}^{2}}{MSE})\]
-             \[= 20\cdot\log_{10}(\frac{MAX_{I}}{\sqrt{MSE}})\]
-             \[= 20\cdot\log_{10}(MAX_{I})-10\cdot\log_{10}(MSE)\]
-        This is measured as a decibel value(dB).
-        <pre><code class="python">import maths
+    <!--Brief description of what PSNR is alonside the Python based pseudocode.-->  
+    <div tabindex="0" class="collapse bg-base-100 border-base-300 border">
+        <div class="collapse-title font-semibold">PSNR (Peak-Signal-to-Noise-Ratio)</div>
+        <div class="collapse-content text-sm">
+            Peak Signal-to-Noise Ratio is a metric that is used to measure the distortion of the estimation compared to the truth value. It uses MSE as part of this calculation. The formula for PSNR is as follows:
+            \[PSNR = 10\cdot\log_{10}(\frac{MAX_{1}^{2}}{MSE})\]
+            \[= 20\cdot\log_{10}(\frac{MAX_{I}}{\sqrt{MSE}})\]
+            \[= 20\cdot\log_{10}(MAX_{I})-10\cdot\log_{10}(MSE)\]
+            This is measured as a decibel value(dB).
+            <pre><code class="python">import maths
 def psnr(A,B) -> float:
-  """
-  Peak Signal-to-Noise Ratio between two images. A and B are 32x32 images.
-  """
-  if len(A) != 32 or len(B) != 32:
+    """
+    Peak Signal-to-Noise Ratio between two images. A and B are 32x32 images.
+    """
+    if len(A) != 32 or len(B) != 32:
     raise ValueError("Images are not 32x32")
-  mse_val = mse(A,B)
-  if mse_val == 0:
-      return float('inf')
-  return 20 * math.log10(max(A)) - 10 * math.log10(mse_val)
-</code></pre> 
+    mse_val = mse(A,B)
+    if mse_val == 0:
+    return float('inf')
+    return 20 * math.log10(max(A)) - 10 * math.log10(mse_val)
+            </code></pre> 
+        </div>
     </div>
-  </div>
-  <div tabindex="0" class="collapse bg-base-100 border-base-300 border">
-    <div class="collapse-title font-semibold">SSIM (Structural Similarity Index Measure)</div>
-    <div class="collapse-content text-sm">
-        This is the measures the similarity between two images. This compares the structural information of the images. The formula for SSIM is as follows:<br>
-        For 2 images \(x\) and \(y\) of same size:
-        <ul>
+    <!--Brief description of what SSIM is alonside the Python based pseudocode.--> 
+    <div tabindex="0" class="collapse bg-base-100 border-base-300 border">
+        <div class="collapse-title font-semibold">SSIM (Structural Similarity Index Measure)</div>
+        <div class="collapse-content text-sm">
+            This is the measures the similarity between two images. This compares the structural information of the images. The formula for SSIM is as follows:<br>
+            For 2 images \(x\) and \(y\) of same size:
+            <ul>
             <li><b>Structure</b>: \[s(x,y)=\frac{\sigma_{xy}+c_{3}}{\sigma_{x}\sigma_{y}+c_{3}}\]</li>
             <li><b>Contrast</b>: \[c(x,y)=\frac{2\sigma_{x}\sigma_{y}+c_{2}}{\sigma^{2}_{x}+\sigma^{2}_{y}+c_{2}}\]</li>
             <li><b>Luminance</b>: \[l(x,y)=\frac{2\mu_{x}\mu_{y}+c_{1}}{\mu^{2}_{x}+\mu^{2}_{y}+c_{1}}\]</li>
-        </ul>
-        These are combined to form:
-        \[SSIM(x,y)=(s(x,y))^{\gamma}\cdot (c(x,y))^{\beta} \cdot (l(x,y))^{\alpha}\]
-        <ul>
-          <li>\(\sigma^{2}_{x}\) and \(\sigma^{2}_{y}\) are sample variances of \(x\) and \(y\) respectively.</li>
-          <li>\(\sigma_{xy}\) is the covariance of \(x\) and \(y\).</li>
-          <li>\(\mu_{x}\) and \(\mu_{y}\) are mean pixels of \(x\) and \(y\) respectively.</li>
-          <li>
-              \(c_{1}\) and \(c_{2}\) are variables used in stabilising division when the denominator is weak:
-              <ul>
-                  <li>\((k_{1}L)^{2}\), \((k_{2}L)^{2}\) belong to \(c_{1}\) and \(c_{2}\) respectively.</li>
-                  <li>\(k_{1}\) and \(k_{2}\) are constants, they default to \(0.01\) and \(0.03\).</li>
-                  <li>\(L\) is the <em>dynamic range</em> of pixel values (usually \(2^{no.\ of\ bits\ per\ pixel}-1\)).</li>
-              </ul>
-          </li>  
-      </ul>
-        <pre><code class="python"># CIFAR dataset has 24 bits per pixel. Statistical functions such as variance, covariance, mean, etc. omitted.
+            </ul>
+            These are combined to form:
+            \[SSIM(x,y)=(s(x,y))^{\gamma}\cdot (c(x,y))^{\beta} \cdot (l(x,y))^{\alpha}\]
+            <ul>
+            <li>\(\sigma^{2}_{x}\) and \(\sigma^{2}_{y}\) are sample variances of \(x\) and \(y\) respectively.</li>
+            <li>\(\sigma_{xy}\) is the covariance of \(x\) and \(y\).</li>
+            <li>\(\mu_{x}\) and \(\mu_{y}\) are mean pixels of \(x\) and \(y\) respectively.</li>
+            <li>
+            \(c_{1}\) and \(c_{2}\) are variables used in stabilising division when the denominator is weak:
+            <ul>
+              <li>\((k_{1}L)^{2}\), \((k_{2}L)^{2}\) belong to \(c_{1}\) and \(c_{2}\) respectively.</li>
+              <li>\(k_{1}\) and \(k_{2}\) are constants, they default to \(0.01\) and \(0.03\).</li>
+              <li>\(L\) is the <em>dynamic range</em> of pixel values (usually \(2^{no.\ of\ bits\ per\ pixel}-1\)).</li>
+            </ul>
+            </li>  
+            </ul>
+            <pre><code class="python"># CIFAR dataset has 24 bits per pixel. Statistical functions such as variance, covariance, mean, etc. omitted.
 L = (2 ** 24) - 1
 k_1 = 0.01
 k_2 = 0.03
@@ -85,149 +91,154 @@ c_1 = (k_1 * L)**2
 c_2 = (k_2 * L)**2
 c_3 = c_2/2
 def s(x,y) -> float:
-  """
-  Structural similarity between the two images.
-  """
-  if len(x) != len(y):
+    """
+    Structural similarity between the two images.
+    """
+    if len(x) != len(y):
     raise ValueError("Images are not of the same size")
-  return (covar(x,y)+c_3)/((covar(x)*covar(y))+c_3)
+    return (covar(x,y)+c_3)/((covar(x)*covar(y))+c_3)
 def c(x,y) -> float:
-  """
-  Contrast between the two images.
-  """
-  if len(x) != len(y):
+    """
+    Contrast between the two images.
+    """
+    if len(x) != len(y):
     raise ValueError("Images are not of the same size")
-  return ((2*covar(x)*covar(y))+c_2)/(((covar(x))**2)+((covar(y))**2)+c_2)
+    return ((2*covar(x)*covar(y))+c_2)/(((covar(x))**2)+((covar(y))**2)+c_2)
 def l(x,y) -> float:
-  """
-  Luminance between the two images.
-  """
-  if len(x) != len(y):
+    """
+    Luminance between the two images.
+    """
+    if len(x) != len(y):
     raise ValueError("Images are not of the same size")
-  return (2*mean(x)*mean(y)+c_1)/((mean(x)**2)+(mean(y)**2)+c_1)
+    return (2*mean(x)*mean(y)+c_1)/((mean(x)**2)+(mean(y)**2)+c_1)
 def ssim(A,B,alpha=1,beta=1,gamma=1) -> float:
-  """
-  Structural Similarity Index Measure between two images. A and B are 32x32 images.
-  """
-  if len(A) != 32 or len(B) != 32:
+    """
+    Structural Similarity Index Measure between two images. A and B are 32x32 images.
+    """
+    if len(A) != 32 or len(B) != 32:
     raise ValueError("Images are not 32x32")
-  return (s(A,B)**gamma)*(c(A,B)**beta)*(l(A,B)**alpha) </code></pre> 
+    return (s(A,B)**gamma)*(c(A,B)**beta)*(l(A,B)**alpha) </code></pre> 
+        </div>
     </div>
-  </div>
-  <h2 class="text-3xl font-bold text-center">Model Quality Metrics</h2>
-<div tabindex="0" class="collapse bg-base-100 border-base-300 border">
-  <div class="collapse-title font-semibold">Table</div>
-  <div class="collapse-content text-sm">
-      For checking the quality of the model, we use these following metrics. Refer to this table as these will be used to derive the following metrics: 
-      <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
-        <table class="table border-collapse">
-            <tbody>
-              <tr>
-                <td class="border border-base-300 p-2">&nbsp;</td>
-                <td class="border border-base-300 p-2">&nbsp;Positive</td>
-                <td class="border border-base-300 p-2">Negative&nbsp;</td>
-              </tr>
-              <tr>
-                <td class="border border-base-300 p-2">&nbsp;Positve</td>
-                <td class="border border-base-300 p-2">&nbsp;True Positive(TP)</td>
-                <td class="border border-base-300 p-2">False Positive(FP)&nbsp;</td>
-              </tr>
-              <tr>
-                <td class="border border-base-300 p-2">&nbsp;Negative</td>
-                <td class="border border-base-300 p-2">&nbsp;False Negative(FN)</td>
-                <td class="border border-base-300 p-2">True Negative(TN)&nbsp;</td>
-              </tr>
-            </tbody>
-          </table>
-      </div>
-  </div>
-  <div tabindex="0" class="collapse bg-base-100 border-base-300 border">
-    <div class="collapse-title font-semibold">Accuracy</div>
-    <div class="collapse-content text-sm">
-        This is the measure of overall correctness of the model i.e. number of correct predictions vs. total predictions:
-        \[Accuracy = \frac{Correct\ Predictions}{Total\ Predictions}\]
-        If you were to refer to the table above it would be:
-        \[Accuracy = \frac{TP+TN}{TP+TN+FP+FN}\]
-        <pre><code class="python">def accuracy(y_pred, y_true) -> float:
-  """
-  Summates number of correct predictions and divides by total predictions.
-  """
-  if len(y_pred) != len(y_true):
+    
+    <!--This section covers metricss related to the model performance.-->
+    <h2 class="text-3xl font-bold text-center">Model Quality Metrics</h2>
+    <!--Brief description of what F_1 score is alonside the Python based pseudocode.-->
+    <div tabindex="0" class="collapse bg-base-100 border-base-300 border">
+        <div class="collapse-title font-semibold">Table</div>
+        <div class="collapse-content text-sm">
+            For checking the quality of the model, we use these following metrics. Refer to this table as these will be used to derive the following metrics: 
+        <div class="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
+            <table class="table border-collapse">
+                <tbody>
+                <tr>
+                    <td class="border border-base-300 p-2">&nbsp;</td>
+                    <td class="border border-base-300 p-2">&nbsp;Positive</td>
+                    <td class="border border-base-300 p-2">Negative&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="border border-base-300 p-2">&nbsp;Positve</td>
+                    <td class="border border-base-300 p-2">&nbsp;True Positive(TP)</td>
+                    <td class="border border-base-300 p-2">False Positive(FP)&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="border border-base-300 p-2">&nbsp;Negative</td>
+                    <td class="border border-base-300 p-2">&nbsp;False Negative(FN)</td>
+                    <td class="border border-base-300 p-2">True Negative(TN)&nbsp;</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!--Brief description of what Accuracy is alonside the Python based pseudocode.-->
+    <div tabindex="0" class="collapse bg-base-100 border-base-300 border">
+        <div class="collapse-title font-semibold">Accuracy</div>
+        <div class="collapse-content text-sm">
+            This is the measure of overall correctness of the model i.e. number of correct predictions vs. total predictions:
+            \[Accuracy = \frac{Correct\ Predictions}{Total\ Predictions}\]
+            If you were to refer to the table above it would be:
+            \[Accuracy = \frac{TP+TN}{TP+TN+FP+FN}\]
+            <pre><code class="python">def accuracy(y_pred, y_true) -> float:
+    """
+    Summates number of correct predictions and divides by total predictions.
+    """
+    if len(y_pred) != len(y_true):
     raise ValueError("Mismatch in length of predicted and true values")
-  correct = 0
-  for i in range(len(y_pred)):
+    correct = 0
+    for i in range(len(y_pred)):
     if y_pred[i] == y_true[i]:
-        correct += 1
-  return correct/len(y_pred)    
+    correct += 1
+    return correct/len(y_pred)    
         </code></pre> 
 
-    </div>
-  </div> 
-  <div tabindex="0" class="collapse bg-base-100 border-base-300 border">
-    <div class="collapse-title font-semibold">Precision</div>
-    <div class="collapse-content text-sm">
-        This measures the number of correct positive predictions made by the model. It is calculated as:
-        \[Precision = \frac{TP}{TP+FP}\]
-        <pre><code class="python">def precision(y_pred, y_true) -> float:
-  """
-  Summing the number of true positives and dividing by the sum of true positives and false positives. <br>
-  This example is for binary classification.
-  """
-  if len(y_pred) != len(y_true):
+        </div>
+    </div> 
+    <!--Brief description of what Precision is alonside the Python based pseudocode.--> 
+    <div tabindex="0" class="collapse bg-base-100 border-base-300 border">
+        <div class="collapse-title font-semibold">Precision</div>
+        <div class="collapse-content text-sm">
+            This measures the number of correct positive predictions made by the model. It is calculated as:
+            \[Precision = \frac{TP}{TP+FP}\]
+            <pre><code class="python">def precision(y_pred, y_true) -> float:
+    """
+    Summing the number of true positives and dividing by the sum of true positives and false positives. <br>
+    This example is for binary classification.
+    """
+    if len(y_pred) != len(y_true):
     raise ValueError("Mismatch in length of predicted and true values")
-  tp = 0
-  fp = 0
-  for i in range(len(y_pred)):
+    tp = 0
+    fp = 0
+    for i in range(len(y_pred)):
     if(y_pred[i] == 1 and y_true[i] == 1):
-        tp += 1
+    tp += 1
     elif(y_pred[i] == 1 and y_true[i] == 0):
-        fp += 1
-  return tp/(tp+fp)
-
-</code></pre> 
+    fp += 1
+    return tp/(tp+fp)
+            </code></pre> 
+        </div>
     </div>
-  </div>
-  <div tabindex="0" class="collapse bg-base-100 border-base-300 border">
-    <div class="collapse-title font-semibold">Recall</div>
-    <div class="collapse-content text-sm">
-        This measures the number of correctly predicted positive instances out of all actual positive instances. It is calculated as:
-        \[Recall = \frac{TP}{TP+FN}\]
-        <pre><code class="python">def recall(y_pred, y_true) -> float:
-  """
-  Summing the number of true positives and dividing by the sum of true positives and false negatives. <br>
-  This example is for binary classification.
-  """
-  if len(y_pred) != len(y_true):
+        <!--Brief description of what Recall is alonside the Python based pseudocode.--> 
+    <div tabindex="0" class="collapse bg-base-100 border-base-300 border">
+        <div class="collapse-title font-semibold">Recall</div>
+        <div class="collapse-content text-sm">
+            This measures the number of correctly predicted positive instances out of all actual positive instances. It is calculated as:
+            \[Recall = \frac{TP}{TP+FN}\]
+            <pre><code class="python">def recall(y_pred, y_true) -> float:
+    """
+    Summing the number of true positives and dividing by the sum of true positives and false negatives. <br>
+    This example is for binary classification.
+    """
+    if len(y_pred) != len(y_true):
     raise ValueError("Mismatch in length of predicted and true values")
-  tp = 0
-  fn = 0
-  for i in range(len(y_pred)):
+    tp = 0
+    fn = 0
+    for i in range(len(y_pred)):
     if(y_pred[i] == 1 and y_true[i] == 1):
-        tp += 1
+    tp += 1
     elif(y_pred[i] == 0 and y_true[i] == 1):
-        fn += 1
-  return tp/(tp+fn)
-        </code></pre> 
+    fn += 1
+    return tp/(tp+fn)
+            </code></pre> 
+        </div>
     </div>
-  </div>
-  <div tabindex="0" class="collapse bg-base-100 border-base-300 border">
-    <div class="collapse-title font-semibold">\(F_{1}\) Score</div>
-    <div class="collapse-content text-sm">
-       This is the harmonic mean of the precision and recall, and is calculated as:
-       \[F_1=\frac{precision\times recall}{precision+recall}\]
-       A more generalised formula where the weight may not be 1 (\(\beta \neq 1\))
-       \[F_{\beta}=(1+\beta^2)(\frac{precision\times recall}{\beta^2\cdot precision+recall})\]
-        <pre><code class="python">def f1(y_pred, y_true, weight) -> float:
-  """
-  Harmonic mean of precision and recall.
-  """
-  if len(y_pred) != len(y_true):
+    <!--Brief description of what F_1 score is alonside the Python based pseudocode.-->
+    <div tabindex="0" class="collapse bg-base-100 border-base-300 border">
+        <div class="collapse-title font-semibold">\(F_{1}\) Score</div>
+            <div class="collapse-content text-sm">
+            This is the harmonic mean of the precision and recall, and is calculated as:
+            \[F_1=\frac{precision\times recall}{precision+recall}\]
+            A more generalised formula where the weight may not be 1 (\(\beta \neq 1\))
+            \[F_{\beta}=(1+\beta^2)(\frac{precision\times recall}{\beta^2\cdot precision+recall})\]
+            <pre><code class="python">def f1(y_pred, y_true, weight) -> float:
+    """
+    Harmonic mean of precision and recall.
+    """
+    if len(y_pred) != len(y_true):
     raise ValueError("Mismatch in length of predicted and true values")
-  precision_val = precision(y_pred, y_true)
-  recall_val = recall(y_pred, y_true)
-  return (1+weight**2)*(precision_val*recall_val)/(weight**2*precision_val+recall_val)
-        </code></pre> 
+    precision_val = precision(y_pred, y_true)
+    recall_val = recall(y_pred, y_true)
+    return (1+weight**2)*(precision_val*recall_val)/(weight**2*precision_val+recall_val)
+            </code></pre> 
+        </div>
     </div>
-  </div>
-
 {% endblock %}

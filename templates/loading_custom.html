@@ -1,65 +1,72 @@
 <!--Design Components taken and altered from: https://daisyui.com-->
 {% extends 'base.html' %}
 {% block content %}
-<div class="flex flex-col items-center justify-center min-h-screen gap-4">
-    <div class="card w-96 bg-base-100 shadow-xl p-8">
-        <h2 class="text-xl font-bold text-center mb-8">
-            Processing Custom Image
-            {% if activation_function == 'relu' %}
-                with <em>ReLU</em> activation function
-            {% elif activation_function == 'sigmoid' %}
-                with <em>Sigmoid</em> activation function
-            {% elif activation_function == 'tanh' %}
-                with <em>Tanh</em> activation function
-            {% endif %}
-            at Noise Level <em>{{ noise_scale }}</em>...
-        </h2>
-       
-        <div class="flex flex-col items-center gap-2">
-            <span class="loading loading-bars loading-xl"></span>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const socket = io();
-        const progressBar = document.getElementById('progress-bar');
-        const progressText = document.getElementById('progress-text');
-        const currentImage = document.getElementById('current-image');
-        const metrics = document.getElementById('metrics');
-
-        socket.on('connect', () => {
-            const result = {{ local_session.get_results()|tojson }};
-            socket.emit('start_custom_process', {
-                activation_function: '{{ activation_function }}',
-                original_image: result[0].original_image,
-                noise_scale: {{ noise_scale }}
-            });
-        });
-
-         socket.on('image_converted', function(data) {
-            currentImage.innerHTML = `
-                <img src="data:image/png;base64,${data.image}" 
-                     class="w-32 h-32 object-contain"/>
-            `;
-        });
-
-        socket.on('complete', function(data) {
-            if (data.result) {
-                console.log('Processing complete, redirecting...');
-                window.location.href = "{{ url_for('result_custom') }}";
-            }
-        });
-
-        socket.on('error', function(error) {
-            console.error('Error:', error);
-            metrics.innerHTML = `
-                <div class="text-red-500 text-center">
-                    Error: ${error}
+        <!--Card component from DaisyUI: https://daisyui.com/components/card/#card-sizes-->
+        <div class="flex flex-col items-center justify-center min-h-screen gap-4">
+                <div class="card w-96 bg-base-100 shadow-xl p-8">
+                        <h2 class="text-xl font-bold text-center mb-8">
+                                Processing Custom Image
+                                {% if activation_function == 'relu' %}
+                                with <em>ReLU</em> activation function
+                                {% elif activation_function == 'sigmoid' %}
+                                with <em>Sigmoid</em> activation function
+                                {% elif activation_function == 'tanh' %}
+                                with <em>Tanh</em> activation function
+                                {% endif %}
+                                at Noise Level <em>{{ noise_scale }}</em>...
+                        </h2>
+                        <!--Loading component from DaisyUI as well: https://daisyui.com/components/loading/#loading-bars-->
+                        <div class="flex flex-col items-center gap-2">
+                                <span class="loading loading-bars loading-xl"></span>
+                        </div>
                 </div>
-            `;
-        });
-    });
-</script>
+        </div>
+
+        <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                        // Initialise socket connection and retrieve elements from the DOM.
+                        // Some of these are redundant as this was copied from the loading_multiple.html file.
+                        const socket = io();
+                        const progressBar = document.getElementById('progress-bar');
+                        const progressText = document.getElementById('progress-text');
+                        const currentImage = document.getElementById('current-image');
+                        const metrics = document.getElementById('metrics');
+
+                        // Retrieve the following values once WebSocket connection has been established.
+                        socket.on('connect', () => {
+                                const result = {{ local_session.get_results()|tojson }};
+                                socket.emit('start_custom_process', {
+                                activation_function: '{{ activation_function }}',
+                                original_image: result[0].original_image,
+                                noise_scale: {{ noise_scale }}
+                                });
+                        });
+                        
+                        // This is also redundant as it was copied from the loading_multiple.html file.
+                        socket.on('image_converted', function(data) {
+                                currentImage.innerHTML = `
+                                <img src="data:image/png;base64,${data.image}" 
+                                class="w-32 h-32 object-contain"/>
+                                `;
+                        });
+                        
+                        // This redirects to the results page for custom images to show the results of the simulated attack.
+                        socket.on('complete', function(data) {
+                                if (data.result) {
+                                        console.log('Processing complete, redirecting...');
+                                        window.location.href = "{{ url_for('result_custom') }}";
+                                }
+                        });
+                        
+                        // Showcase any error that occurs, though in this case it will not print as it uses the loading bar.
+                        socket.on('error', function(error) {
+                                console.error('Error:', error);
+                                metrics.innerHTML = `
+                                <div class="text-red-500 text-center">
+                                Error: ${error}
+                                </div>
+                                `;
+                        });
+                });
+        </script>
 {% endblock %}
